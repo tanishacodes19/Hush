@@ -64,8 +64,14 @@ data/review/*packet*.jsonl
 data/review/disputes*.json
 data/review/review_manifest_v1.json
 
-# Holdout Dataset (Quarantined final benchmark; single-use evaluation)
-data/holdout/holdout_v1.jsonl
+# Holdout Dataset, Candidate Drafts & Review Submissions (Deny-by-default quarantine boundary)
+data/holdout/*
+!data/holdout/collection_instructions.md
+!data/holdout/holdout_spec.md
+!data/holdout/holdout_manifest_template.json
+!data/holdout/holdout_candidate_template.jsonl
+!data/holdout/holdout_collection_template.csv
+data/holdout/review/
 
 # Internal Adjudication Records (Local only; public summary in data/review/review_status_summary.md)
 docs/adjudication_*.md
