@@ -1,15 +1,27 @@
 """FastAPI application entrypoint for Hush backend."""
 
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.routes.chat import router as chat_router
 from app.routes.metrics import router as metrics_router
+from app.services.decider import get_decider
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Validate decider and configuration on application startup."""
+    # Ensure active decider loads reliably without falling back to stub
+    get_decider()
+    yield
+
 
 app = FastAPI(
     title="Hush API",
-    description="Conversational AI restraint agent using Strands Decider 2B",
+    description="Conversational Restraint Engine for group chats",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 # CORS middleware for frontend access

@@ -11,14 +11,15 @@ from botocore.exceptions import BotoCoreError, ClientError
 
 from app.config import settings
 from app.schemas import Message
+from app.services.generation import GenerationConfigError, GenerationServiceError
 
 
-class BedrockConfigError(ValueError):
+class BedrockConfigError(GenerationConfigError):
     """Raised when required AWS or Bedrock configuration is missing."""
     pass
 
 
-class BedrockServiceError(RuntimeError):
+class BedrockServiceError(GenerationServiceError):
     """Raised when an error occurs during an Amazon Bedrock API invocation."""
     pass
 

@@ -16,7 +16,7 @@ from app.services.addressing import resolve_addressing
 from app.services.bedrock import BedrockConfigError, BedrockServiceError
 from app.services.conversation import conversation_manager
 from app.services.decider import get_decider
-from app.services.generation import get_generator
+from app.services.generation import GenerationConfigError, GenerationServiceError, get_generator
 from app.services.metrics import metrics_tracker
 from app.services.request_adapter import normalize_request
 
@@ -123,11 +123,23 @@ def handle_chat_message(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Bedrock configuration error: {exc}",
             ) from exc
+        except GenerationConfigError as exc:
+            metrics_tracker.record_generation_failure()
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Generation configuration error: {exc}",
+            ) from exc
         except BedrockServiceError as exc:
             metrics_tracker.record_generation_failure()
             raise HTTPException(
                 status_code=status.HTTP_502_BAD_GATEWAY,
                 detail=f"Bedrock generation error: {exc}",
+            ) from exc
+        except GenerationServiceError as exc:
+            metrics_tracker.record_generation_failure()
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=f"Generation provider error: {exc}",
             ) from exc
 
     elif decision.action == Action.SILENT:
