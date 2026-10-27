@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "manifest_version": "1.0.0",
+  "dataset_version": "v1.0.0-provisional",
+  "audit_date": "2026-10-27",
+  "status": "provisional_unverified",
+  "review_requirements": {
+    "target_sample_size": 60,
+    "stratified_by_category": true,
+    "min_cohens_kappa": 0.75,
+    "required_annotators_per_scenario": 2,
+    "lead_adjudicator_required_on_dispute": true
+  },
+  "reviewers": [],
+  "cohens_kappa_overall": null,
+  "adjudication_log": [],
+  "records": [
+    {
+      "scenario_id": "s-001",
+      "annotator_1_label": null,
+      "annotator_2_label": null,
+      "agreement": null,
+      "adjudicated_action": null,
+      "adjudicator_notes": null,
+      "timestamp": null
+    }
+  ]
+}

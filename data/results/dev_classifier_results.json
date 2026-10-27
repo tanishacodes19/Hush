@@ -1,0 +1,104 @@
+{
+  "status": "provisional_research_results",
+  "provenance_gate": "unverified_human_labels",
+  "split": "dev",
+  "n_samples": 180,
+  "model_artifact": "data\\models\\restraint_classifier_v1.json",
+  "hyperparameters": {
+    "l2_reg": 0.5,
+    "balanced_class_weights": true,
+    "max_epochs": 500,
+    "learning_rate": 0.25,
+    "seed": 42
+  },
+  "evaluation_report": {
+    "model_name": "ML Restraint Classifier (L2 Reg, Balanced)",
+    "split": "dev",
+    "total_samples": 180,
+    "accuracy": {
+      "value": 0.8667,
+      "ci_lower": 0.8165,
+      "ci_upper": 0.9167
+    },
+    "macro_f1": {
+      "value": 0.8331,
+      "ci_lower": 0.7728,
+      "ci_upper": 0.8911
+    },
+    "unnecessary_response_rate": {
+      "value": 0.0,
+      "ci_lower": 0.0,
+      "ci_upper": 0.0
+    },
+    "missed_contribution_rate": {
+      "value": 0.0101,
+      "ci_lower": 0.0,
+      "ci_upper": 0.0323
+    },
+    "calls_avoided_rate": {
+      "value": 0.4556,
+      "ci_lower": 0.3833,
+      "ci_upper": 0.5278
+    },
+    "per_class": {
+      "SILENT": {
+        "precision": 0.9878,
+        "recall": 1.0,
+        "f1": 0.9939,
+        "support": 81.0
+      },
+      "SPEAK": {
+        "precision": 0.8545,
+        "recall": 0.746,
+        "f1": 0.7966,
+        "support": 63.0
+      },
+      "ASK": {
+        "precision": 0.6512,
+        "recall": 0.7778,
+        "f1": 0.7089,
+        "support": 36.0
+      }
+    },
+    "confusion_matrix": {
+      "SILENT": {
+        "SILENT": 81,
+        "SPEAK": 0,
+        "ASK": 0
+      },
+      "SPEAK": {
+        "SILENT": 1,
+        "SPEAK": 47,
+        "ASK": 15
+      },
+      "ASK": {
+        "SILENT": 0,
+        "SPEAK": 8,
+        "ASK": 28
+      }
+    }
+  },
+  "paired_comparisons": {
+    "vs_rule_based": {
+      "mcnemar": {
+        "statistic": 18.2535,
+        "p_value": 1.9e-05,
+        "b": 54,
+        "c": 17,
+        "both_correct": 102,
+        "both_incorrect": 7,
+        "method": "mcnemar_chi2",
+        "significant_at_05": true
+      },
+      "delta_macro_f1": {
+        "f1_model_a": 0.8331,
+        "f1_model_b": 0.5122,
+        "delta": 0.3209,
+        "ci_lower": 0.2281,
+        "ci_upper": 0.4085,
+        "p_value": 0.0,
+        "significant_at_05": true
+      }
+    }
+  }
+}

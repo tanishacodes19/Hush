@@ -56,3 +56,18 @@ pnpm-debug.log*
 *.swo
 .DS_Store
 Thumbs.db
+
+# Human Review Submissions & Private Records (Local only; excluded from public portfolio release)
+data/review/*completed*.csv
+data/review/*form*.csv
+data/review/*packet*.jsonl
+data/review/disputes*.json
+data/review/review_manifest_v1.json
+
+# Holdout Dataset (Quarantined final benchmark; single-use evaluation)
+data/holdout/holdout_v1.jsonl
+
+# Internal Adjudication Records (Local only; public summary in data/review/review_status_summary.md)
+docs/adjudication_*.md
+
+

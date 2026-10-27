@@ -1,0 +1,223 @@
+{
+  "status": "provisional_research_results",
+  "evaluation_type": "5_fold_out_of_fold",
+  "split": "dev",
+  "total_samples": 180,
+  "cost_matrix": {
+    "SILENT": {
+      "SILENT": 0.0,
+      "SPEAK": 3.0,
+      "ASK": 3.0
+    },
+    "SPEAK": {
+      "SILENT": 5.0,
+      "SPEAK": 0.0,
+      "ASK": 1.0
+    },
+    "ASK": {
+      "SILENT": 5.0,
+      "SPEAK": 1.5,
+      "ASK": 0.0
+    }
+  },
+  "policies": [
+    {
+      "policy_name": "Policy 1: Default Argmax",
+      "mean_cost_per_message": 0.1778,
+      "total_cost": 32.0,
+      "accuracy": 0.8667,
+      "macro_f1": 0.8331,
+      "unnecessary_response_rate": 0.0,
+      "missed_contribution_rate": 0.0101,
+      "calls_avoided_rate": 0.4556,
+      "changed_predictions_count": 0,
+      "invariant_violations": 0,
+      "invariant_preserved": true,
+      "per_class_recall": {
+        "SILENT": 1.0,
+        "SPEAK": 0.746,
+        "ASK": 0.7778
+      }
+    },
+    {
+      "policy_name": "Policy 2: Cost-Sensitive Bayes Risk",
+      "mean_cost_per_message": 1.7,
+      "total_cost": 306.0,
+      "accuracy": 0.2,
+      "macro_f1": 0.1111,
+      "unnecessary_response_rate": 1.0,
+      "missed_contribution_rate": 0.0,
+      "calls_avoided_rate": 0.0,
+      "changed_predictions_count": 137,
+      "invariant_violations": 0,
+      "invariant_preserved": true,
+      "per_class_recall": {
+        "SILENT": 0.0,
+        "SPEAK": 0.0,
+        "ASK": 1.0
+      }
+    },
+    {
+      "policy_name": "Policy 3: Uncertainty Routing (delta=0.05)",
+      "mean_cost_per_message": 0.2833,
+      "total_cost": 51.0,
+      "accuracy": 0.7389,
+      "macro_f1": 0.6697,
+      "unnecessary_response_rate": 0.0,
+      "missed_contribution_rate": 0.0101,
+      "calls_avoided_rate": 0.4556,
+      "changed_predictions_count": 39,
+      "invariant_violations": 0,
+      "invariant_preserved": true,
+      "per_class_recall": {
+        "SILENT": 1.0,
+        "SPEAK": 0.254,
+        "ASK": 1.0
+      }
+    },
+    {
+      "policy_name": "Policy 3: Uncertainty Routing (delta=0.10)",
+      "mean_cost_per_message": 0.3556,
+      "total_cost": 64.0,
+      "accuracy": 0.6667,
+      "macro_f1": 0.5448,
+      "unnecessary_response_rate": 0.0,
+      "missed_contribution_rate": 0.0101,
+      "calls_avoided_rate": 0.4556,
+      "changed_predictions_count": 52,
+      "invariant_violations": 0,
+      "invariant_preserved": true,
+      "per_class_recall": {
+        "SILENT": 1.0,
+        "SPEAK": 0.0476,
+        "ASK": 1.0
+      }
+    },
+    {
+      "policy_name": "Policy 3: Uncertainty Routing (delta=0.15)",
+      "mean_cost_per_message": 0.3722,
+      "total_cost": 67.0,
+      "accuracy": 0.65,
+      "macro_f1": 0.5104,
+      "unnecessary_response_rate": 0.0,
+      "missed_contribution_rate": 0.0101,
+      "calls_avoided_rate": 0.4556,
+      "changed_predictions_count": 55,
+      "invariant_violations": 0,
+      "invariant_preserved": true,
+      "per_class_recall": {
+        "SILENT": 1.0,
+        "SPEAK": 0.0,
+        "ASK": 1.0
+      }
+    },
+    {
+      "policy_name": "Policy 3: Uncertainty Routing (delta=0.20)",
+      "mean_cost_per_message": 0.3722,
+      "total_cost": 67.0,
+      "accuracy": 0.65,
+      "macro_f1": 0.5104,
+      "unnecessary_response_rate": 0.0,
+      "missed_contribution_rate": 0.0101,
+      "calls_avoided_rate": 0.4556,
+      "changed_predictions_count": 55,
+      "invariant_violations": 0,
+      "invariant_preserved": true,
+      "per_class_recall": {
+        "SILENT": 1.0,
+        "SPEAK": 0.0,
+        "ASK": 1.0
+      }
+    },
+    {
+      "policy_name": "Policy 3: Uncertainty Routing (delta=0.25)",
+      "mean_cost_per_message": 0.3722,
+      "total_cost": 67.0,
+      "accuracy": 0.65,
+      "macro_f1": 0.5104,
+      "unnecessary_response_rate": 0.0,
+      "missed_contribution_rate": 0.0101,
+      "calls_avoided_rate": 0.4556,
+      "changed_predictions_count": 55,
+      "invariant_violations": 0,
+      "invariant_preserved": true,
+      "per_class_recall": {
+        "SILENT": 1.0,
+        "SPEAK": 0.0,
+        "ASK": 1.0
+      }
+    },
+    {
+      "policy_name": "Policy 4: Silence Threshold (tau=0.35)",
+      "mean_cost_per_message": 0.1778,
+      "total_cost": 32.0,
+      "accuracy": 0.8667,
+      "macro_f1": 0.8331,
+      "unnecessary_response_rate": 0.0,
+      "missed_contribution_rate": 0.0101,
+      "calls_avoided_rate": 0.4556,
+      "changed_predictions_count": 0,
+      "invariant_violations": 0,
+      "invariant_preserved": true,
+      "per_class_recall": {
+        "SILENT": 1.0,
+        "SPEAK": 0.746,
+        "ASK": 0.7778
+      }
+    },
+    {
+      "policy_name": "Policy 4: Silence Threshold (tau=0.40)",
+      "mean_cost_per_message": 0.1778,
+      "total_cost": 32.0,
+      "accuracy": 0.8667,
+      "macro_f1": 0.8331,
+      "unnecessary_response_rate": 0.0,
+      "missed_contribution_rate": 0.0101,
+      "calls_avoided_rate": 0.4556,
+      "changed_predictions_count": 0,
+      "invariant_violations": 0,
+      "invariant_preserved": true,
+      "per_class_recall": {
+        "SILENT": 1.0,
+        "SPEAK": 0.746,
+        "ASK": 0.7778
+      }
+    },
+    {
+      "policy_name": "Policy 4: Silence Threshold (tau=0.45)",
+      "mean_cost_per_message": 0.2111,
+      "total_cost": 38.0,
+      "accuracy": 0.8556,
+      "macro_f1": 0.8231,
+      "unnecessary_response_rate": 0.0247,
+      "missed_contribution_rate": 0.0101,
+      "calls_avoided_rate": 0.4444,
+      "changed_predictions_count": 2,
+      "invariant_violations": 0,
+      "invariant_preserved": true,
+      "per_class_recall": {
+        "SILENT": 0.9753,
+        "SPEAK": 0.746,
+        "ASK": 0.7778
+      }
+    },
+    {
+      "policy_name": "Policy 4: Silence Threshold (tau=0.50)",
+      "mean_cost_per_message": 0.6167,
+      "total_cost": 111.0,
+      "accuracy": 0.7167,
+      "macro_f1": 0.7124,
+      "unnecessary_response_rate": 0.3457,
+      "missed_contribution_rate": 0.0,
+      "calls_avoided_rate": 0.2944,
+      "changed_predictions_count": 29,
+      "invariant_violations": 0,
+      "invariant_preserved": true,
+      "per_class_recall": {
+        "SILENT": 0.6543,
+        "SPEAK": 0.7619,
+        "ASK": 0.7778
+      }
+    }
+  ]
+}

@@ -1,0 +1,713 @@
+{
+  "status": "provisional_research_results",
+  "evaluation_type": "5_fold_out_of_fold",
+  "split": "dev",
+  "total_samples": 180,
+  "total_errors": 24,
+  "overall_accuracy": 0.8667,
+  "macro_f1": 0.8331,
+  "unnecessary_response_rate": 0.0,
+  "missed_contribution_rate": 0.0101,
+  "confusion_matrix": {
+    "SILENT": {
+      "SILENT": 81,
+      "SPEAK": 0,
+      "ASK": 0
+    },
+    "SPEAK": {
+      "SILENT": 1,
+      "SPEAK": 47,
+      "ASK": 15
+    },
+    "ASK": {
+      "SILENT": 0,
+      "SPEAK": 8,
+      "ASK": 28
+    }
+  },
+  "per_class_metrics": {
+    "SILENT": {
+      "precision": 0.9878048780487805,
+      "recall": 1.0,
+      "f1": 0.9938650306748467,
+      "support": 81.0
+    },
+    "SPEAK": {
+      "precision": 0.8545454545454545,
+      "recall": 0.746031746031746,
+      "f1": 0.7966101694915254,
+      "support": 63.0
+    },
+    "ASK": {
+      "precision": 0.6511627906976745,
+      "recall": 0.7777777777777778,
+      "f1": 0.7088607594936709,
+      "support": 36.0
+    }
+  },
+  "error_categories_summary": {
+    "SPEAK_VS_ASK_CONFUSION": 23,
+    "MISSED_CONTRIBUTION": 1
+  },
+  "gold_to_pred_summary": {
+    "SPEAK -> ASK": 15,
+    "ASK -> SPEAK": 8,
+    "SPEAK -> SILENT": 1
+  },
+  "scenario_category_errors": {
+    "direct_question_addressed": 6,
+    "ambiguous_request": 5,
+    "emotional_venting": 3,
+    "follow_up_dependent": 10
+  },
+  "error_details": [
+    {
+      "scenario_id": "s-007",
+      "conversation_id": "c-007",
+      "category": "direct_question_addressed",
+      "address_method": "mention",
+      "addressed_to_hush": true,
+      "gold_action": "SPEAK",
+      "predicted_action": "ASK",
+      "rule_predicted_action": "SPEAK",
+      "confidence": 0.4148,
+      "probabilities": {
+        "SILENT": 0.214524,
+        "SPEAK": 0.370709,
+        "ASK": 0.414767
+      },
+      "error_category": "SPEAK_VS_ASK_CONFUSION",
+      "explanation": "Model hesitated and chose ASK when direct answer was expected.",
+      "key_observable_features": {
+        "has_question_mark": 1.0,
+        "has_action_request": 1.0,
+        "has_underspecified_cue": 0.0,
+        "has_technical_spec": 0.0,
+        "has_social_banter": 0.0,
+        "is_reply_to_human": 0.0,
+        "is_reply_to_assistant": 0.0
+      }
+    },
+    {
+      "scenario_id": "s-011",
+      "conversation_id": "c-011",
+      "category": "direct_question_addressed",
+      "address_method": "name",
+      "addressed_to_hush": true,
+      "gold_action": "SPEAK",
+      "predicted_action": "ASK",
+      "rule_predicted_action": "SPEAK",
+      "confidence": 0.4092,
+      "probabilities": {
+        "SILENT": 0.224064,
+        "SPEAK": 0.366763,
+        "ASK": 0.409174
+      },
+      "error_category": "SPEAK_VS_ASK_CONFUSION",
+      "explanation": "Model hesitated and chose ASK when direct answer was expected.",
+      "key_observable_features": {
+        "has_question_mark": 1.0,
+        "has_action_request": 1.0,
+        "has_underspecified_cue": 0.0,
+        "has_technical_spec": 0.0,
+        "has_social_banter": 0.0,
+        "is_reply_to_human": 0.0,
+        "is_reply_to_assistant": 0.0
+      }
+    },
+    {
+      "scenario_id": "s-013",
+      "conversation_id": "c-013",
+      "category": "direct_question_addressed",
+      "address_method": "mention",
+      "addressed_to_hush": true,
+      "gold_action": "SPEAK",
+      "predicted_action": "ASK",
+      "rule_predicted_action": "SPEAK",
+      "confidence": 0.4049,
+      "probabilities": {
+        "SILENT": 0.219317,
+        "SPEAK": 0.375769,
+        "ASK": 0.404913
+      },
+      "error_category": "SPEAK_VS_ASK_CONFUSION",
+      "explanation": "Model hesitated and chose ASK when direct answer was expected.",
+      "key_observable_features": {
+        "has_question_mark": 1.0,
+        "has_action_request": 1.0,
+        "has_underspecified_cue": 0.0,
+        "has_technical_spec": 0.0,
+        "has_social_banter": 0.0,
+        "is_reply_to_human": 0.0,
+        "is_reply_to_assistant": 0.0
+      }
+    },
+    {
+      "scenario_id": "s-023",
+      "conversation_id": "c-023",
+      "category": "direct_question_addressed",
+      "address_method": "name",
+      "addressed_to_hush": true,
+      "gold_action": "SPEAK",
+      "predicted_action": "ASK",
+      "rule_predicted_action": "SPEAK",
+      "confidence": 0.4178,
+      "probabilities": {
+        "SILENT": 0.218963,
+        "SPEAK": 0.363212,
+        "ASK": 0.417825
+      },
+      "error_category": "SPEAK_VS_ASK_CONFUSION",
+      "explanation": "Model hesitated and chose ASK when direct answer was expected.",
+      "key_observable_features": {
+        "has_question_mark": 1.0,
+        "has_action_request": 1.0,
+        "has_underspecified_cue": 0.0,
+        "has_technical_spec": 0.0,
+        "has_social_banter": 0.0,
+        "is_reply_to_human": 0.0,
+        "is_reply_to_assistant": 0.0
+      }
+    },
+    {
+      "scenario_id": "s-035",
+      "conversation_id": "c-035",
+      "category": "direct_question_addressed",
+      "address_method": "name",
+      "addressed_to_hush": true,
+      "gold_action": "SPEAK",
+      "predicted_action": "ASK",
+      "rule_predicted_action": "SPEAK",
+      "confidence": 0.4107,
+      "probabilities": {
+        "SILENT": 0.223856,
+        "SPEAK": 0.36541,
+        "ASK": 0.410734
+      },
+      "error_category": "SPEAK_VS_ASK_CONFUSION",
+      "explanation": "Model hesitated and chose ASK when direct answer was expected.",
+      "key_observable_features": {
+        "has_question_mark": 1.0,
+        "has_action_request": 1.0,
+        "has_underspecified_cue": 0.0,
+        "has_technical_spec": 0.0,
+        "has_social_banter": 0.0,
+        "is_reply_to_human": 0.0,
+        "is_reply_to_assistant": 0.0
+      }
+    },
+    {
+      "scenario_id": "s-037",
+      "conversation_id": "c-037",
+      "category": "direct_question_addressed",
+      "address_method": "mention",
+      "addressed_to_hush": true,
+      "gold_action": "SPEAK",
+      "predicted_action": "ASK",
+      "rule_predicted_action": "SPEAK",
+      "confidence": 0.4074,
+      "probabilities": {
+        "SILENT": 0.219067,
+        "SPEAK": 0.373487,
+        "ASK": 0.407446
+      },
+      "error_category": "SPEAK_VS_ASK_CONFUSION",
+      "explanation": "Model hesitated and chose ASK when direct answer was expected.",
+      "key_observable_features": {
+        "has_question_mark": 1.0,
+        "has_action_request": 1.0,
+        "has_underspecified_cue": 0.0,
+        "has_technical_spec": 0.0,
+        "has_social_banter": 0.0,
+        "is_reply_to_human": 0.0,
+        "is_reply_to_assistant": 0.0
+      }
+    },
+    {
+      "scenario_id": "s-060",
+      "conversation_id": "c-060",
+      "category": "ambiguous_request",
+      "address_method": "mention",
+      "addressed_to_hush": true,
+      "gold_action": "ASK",
+      "predicted_action": "SPEAK",
+      "rule_predicted_action": "SPEAK",
+      "confidence": 0.3767,
+      "probabilities": {
+        "SILENT": 0.27641,
+        "SPEAK": 0.376678,
+        "ASK": 0.346912
+      },
+      "error_category": "SPEAK_VS_ASK_CONFUSION",
+      "explanation": "Model attempted direct answer on an underspecified or incomplete request.",
+      "key_observable_features": {
+        "has_question_mark": 0.0,
+        "has_action_request": 0.0,
+        "has_underspecified_cue": 0.0,
+        "has_technical_spec": 1.0,
+        "has_social_banter": 0.0,
+        "is_reply_to_human": 0.0,
+        "is_reply_to_assistant": 0.0
+      }
+    },
+    {
+      "scenario_id": "s-078",
+      "conversation_id": "c-078",
+      "category": "ambiguous_request",
+      "address_method": "mention",
+      "addressed_to_hush": true,
+      "gold_action": "ASK",
+      "predicted_action": "SPEAK",
+      "rule_predicted_action": "SPEAK",
+      "confidence": 0.3877,
+      "probabilities": {
+        "SILENT": 0.242614,
+        "SPEAK": 0.387725,
+        "ASK": 0.369661
+      },
+      "error_category": "SPEAK_VS_ASK_CONFUSION",
+      "explanation": "Model attempted direct answer on an underspecified or incomplete request.",
+      "key_observable_features": {
+        "has_question_mark": 1.0,
+        "has_action_request": 0.0,
+        "has_underspecified_cue": 0.0,
+        "has_technical_spec": 0.0,
+        "has_social_banter": 0.0,
+        "is_reply_to_human": 0.0,
+        "is_reply_to_assistant": 0.0
+      }
+    },
+    {
+      "scenario_id": "s-080",
+      "conversation_id": "c-080",
+      "category": "ambiguous_request",
+      "address_method": "mention",
+      "addressed_to_hush": true,
+      "gold_action": "ASK",
+      "predicted_action": "SPEAK",
+      "rule_predicted_action": "SPEAK",
+      "confidence": 0.3925,
+      "probabilities": {
+        "SILENT": 0.239349,
+        "SPEAK": 0.392486,
+        "ASK": 0.368166
+      },
+      "error_category": "SPEAK_VS_ASK_CONFUSION",
+      "explanation": "Model attempted direct answer on an underspecified or incomplete request.",
+      "key_observable_features": {
+        "has_question_mark": 1.0,
+        "has_action_request": 0.0,
+        "has_underspecified_cue": 0.0,
+        "has_technical_spec": 0.0,
+        "has_social_banter": 0.0,
+        "is_reply_to_human": 0.0,
+        "is_reply_to_assistant": 0.0
+      }
+    },
+    {
+      "scenario_id": "s-084",
+      "conversation_id": "c-084",
+      "category": "ambiguous_request",
+      "address_method": "mention",
+      "addressed_to_hush": true,
+      "gold_action": "ASK",
+      "predicted_action": "SPEAK",
+      "rule_predicted_action": "SPEAK",
+      "confidence": 0.3887,
+      "probabilities": {
+        "SILENT": 0.242694,
+        "SPEAK": 0.388695,
+        "ASK": 0.368611
+      },
+      "error_category": "SPEAK_VS_ASK_CONFUSION",
+      "explanation": "Model attempted direct answer on an underspecified or incomplete request.",
+      "key_observable_features": {
+        "has_question_mark": 1.0,
+        "has_action_request": 0.0,
+        "has_underspecified_cue": 0.0,
+        "has_technical_spec": 0.0,
+        "has_social_banter": 0.0,
+        "is_reply_to_human": 0.0,
+        "is_reply_to_assistant": 0.0
+      }
+    },
+    {
+      "scenario_id": "s-087",
+      "conversation_id": "c-087",
+      "category": "ambiguous_request",
+      "address_method": "name",
+      "addressed_to_hush": true,
+      "gold_action": "ASK",
+      "predicted_action": "SPEAK",
+      "rule_predicted_action": "SPEAK",
+      "confidence": 0.3854,
+      "probabilities": {
+        "SILENT": 0.250145,
+        "SPEAK": 0.385403,
+        "ASK": 0.364451
+      },
+      "error_category": "SPEAK_VS_ASK_CONFUSION",
+      "explanation": "Model attempted direct answer on an underspecified or incomplete request.",
+      "key_observable_features": {
+        "has_question_mark": 1.0,
+        "has_action_request": 0.0,
+        "has_underspecified_cue": 0.0,
+        "has_technical_spec": 0.0,
+        "has_social_banter": 0.0,
+        "is_reply_to_human": 0.0,
+        "is_reply_to_assistant": 0.0
+      }
+    },
+    {
+      "scenario_id": "s-166",
+      "conversation_id": "c-166",
+      "category": "emotional_venting",
+      "address_method": "name",
+      "addressed_to_hush": true,
+      "gold_action": "SPEAK",
+      "predicted_action": "ASK",
+      "rule_predicted_action": "SPEAK",
+      "confidence": 0.3921,
+      "probabilities": {
+        "SILENT": 0.259864,
+        "SPEAK": 0.348044,
+        "ASK": 0.392092
+      },
+      "error_category": "SPEAK_VS_ASK_CONFUSION",
+      "explanation": "Model hesitated and chose ASK when direct answer was expected.",
+      "key_observable_features": {
+        "has_question_mark": 0.0,
+        "has_action_request": 1.0,
+        "has_underspecified_cue": 0.0,
+        "has_technical_spec": 1.0,
+        "has_social_banter": 0.0,
+        "is_reply_to_human": 0.0,
+        "is_reply_to_assistant": 0.0
+      }
+    },
+    {
+      "scenario_id": "s-173",
+      "conversation_id": "c-173",
+      "category": "emotional_venting",
+      "address_method": "none",
+      "addressed_to_hush": false,
+      "gold_action": "SPEAK",
+      "predicted_action": "SILENT",
+      "rule_predicted_action": "SPEAK",
+      "confidence": 0.474,
+      "probabilities": {
+        "SILENT": 0.473965,
+        "SPEAK": 0.296286,
+        "ASK": 0.22975
+      },
+      "error_category": "MISSED_CONTRIBUTION",
+      "explanation": "Model incorrectly remained silent when response or clarification was needed.",
+      "key_observable_features": {
+        "has_question_mark": 1.0,
+        "has_action_request": 0.0,
+        "has_underspecified_cue": 0.0,
+        "has_technical_spec": 1.0,
+        "has_social_banter": 0.0,
+        "is_reply_to_human": 0.0,
+        "is_reply_to_assistant": 0.0
+      }
+    },
+    {
+      "scenario_id": "s-174",
+      "conversation_id": "c-174",
+      "category": "emotional_venting",
+      "address_method": "name",
+      "addressed_to_hush": true,
+      "gold_action": "SPEAK",
+      "predicted_action": "ASK",
+      "rule_predicted_action": "SPEAK",
+      "confidence": 0.4067,
+      "probabilities": {
+        "SILENT": 0.224392,
+        "SPEAK": 0.368862,
+        "ASK": 0.406747
+      },
+      "error_category": "SPEAK_VS_ASK_CONFUSION",
+      "explanation": "Model hesitated and chose ASK when direct answer was expected.",
+      "key_observable_features": {
+        "has_question_mark": 1.0,
+        "has_action_request": 1.0,
+        "has_underspecified_cue": 0.0,
+        "has_technical_spec": 0.0,
+        "has_social_banter": 0.0,
+        "is_reply_to_human": 0.0,
+        "is_reply_to_assistant": 0.0
+      }
+    },
+    {
+      "scenario_id": "s-191",
+      "conversation_id": "c-191",
+      "category": "follow_up_dependent",
+      "address_method": "reply",
+      "addressed_to_hush": true,
+      "gold_action": "SPEAK",
+      "predicted_action": "ASK",
+      "rule_predicted_action": "SPEAK",
+      "confidence": 0.4262,
+      "probabilities": {
+        "SILENT": 0.184524,
+        "SPEAK": 0.389239,
+        "ASK": 0.426237
+      },
+      "error_category": "SPEAK_VS_ASK_CONFUSION",
+      "explanation": "Model hesitated and chose ASK when direct answer was expected.",
+      "key_observable_features": {
+        "has_question_mark": 1.0,
+        "has_action_request": 1.0,
+        "has_underspecified_cue": 0.0,
+        "has_technical_spec": 0.0,
+        "has_social_banter": 0.0,
+        "is_reply_to_human": 0.0,
+        "is_reply_to_assistant": 1.0
+      }
+    },
+    {
+      "scenario_id": "s-199",
+      "conversation_id": "c-199",
+      "category": "follow_up_dependent",
+      "address_method": "reply",
+      "addressed_to_hush": true,
+      "gold_action": "SPEAK",
+      "predicted_action": "ASK",
+      "rule_predicted_action": "SPEAK",
+      "confidence": 0.4313,
+      "probabilities": {
+        "SILENT": 0.184623,
+        "SPEAK": 0.384116,
+        "ASK": 0.431261
+      },
+      "error_category": "SPEAK_VS_ASK_CONFUSION",
+      "explanation": "Model hesitated and chose ASK when direct answer was expected.",
+      "key_observable_features": {
+        "has_question_mark": 1.0,
+        "has_action_request": 1.0,
+        "has_underspecified_cue": 0.0,
+        "has_technical_spec": 0.0,
+        "has_social_banter": 0.0,
+        "is_reply_to_human": 0.0,
+        "is_reply_to_assistant": 1.0
+      }
+    },
+    {
+      "scenario_id": "s-201",
+      "conversation_id": "c-201",
+      "category": "follow_up_dependent",
+      "address_method": "reply",
+      "addressed_to_hush": true,
+      "gold_action": "SPEAK",
+      "predicted_action": "ASK",
+      "rule_predicted_action": "SPEAK",
+      "confidence": 0.4236,
+      "probabilities": {
+        "SILENT": 0.182514,
+        "SPEAK": 0.393908,
+        "ASK": 0.423578
+      },
+      "error_category": "SPEAK_VS_ASK_CONFUSION",
+      "explanation": "Model hesitated and chose ASK when direct answer was expected.",
+      "key_observable_features": {
+        "has_question_mark": 1.0,
+        "has_action_request": 1.0,
+        "has_underspecified_cue": 0.0,
+        "has_technical_spec": 0.0,
+        "has_social_banter": 0.0,
+        "is_reply_to_human": 0.0,
+        "is_reply_to_assistant": 1.0
+      }
+    },
+    {
+      "scenario_id": "s-204",
+      "conversation_id": "c-204",
+      "category": "follow_up_dependent",
+      "address_method": "reply",
+      "addressed_to_hush": true,
+      "gold_action": "SPEAK",
+      "predicted_action": "ASK",
+      "rule_predicted_action": "SPEAK",
+      "confidence": 0.4287,
+      "probabilities": {
+        "SILENT": 0.184314,
+        "SPEAK": 0.386958,
+        "ASK": 0.428728
+      },
+      "error_category": "SPEAK_VS_ASK_CONFUSION",
+      "explanation": "Model hesitated and chose ASK when direct answer was expected.",
+      "key_observable_features": {
+        "has_question_mark": 1.0,
+        "has_action_request": 1.0,
+        "has_underspecified_cue": 0.0,
+        "has_technical_spec": 0.0,
+        "has_social_banter": 0.0,
+        "is_reply_to_human": 0.0,
+        "is_reply_to_assistant": 1.0
+      }
+    },
+    {
+      "scenario_id": "s-206",
+      "conversation_id": "c-206",
+      "category": "follow_up_dependent",
+      "address_method": "reply",
+      "addressed_to_hush": true,
+      "gold_action": "SPEAK",
+      "predicted_action": "ASK",
+      "rule_predicted_action": "SPEAK",
+      "confidence": 0.4304,
+      "probabilities": {
+        "SILENT": 0.184696,
+        "SPEAK": 0.384883,
+        "ASK": 0.430421
+      },
+      "error_category": "SPEAK_VS_ASK_CONFUSION",
+      "explanation": "Model hesitated and chose ASK when direct answer was expected.",
+      "key_observable_features": {
+        "has_question_mark": 1.0,
+        "has_action_request": 1.0,
+        "has_underspecified_cue": 0.0,
+        "has_technical_spec": 0.0,
+        "has_social_banter": 0.0,
+        "is_reply_to_human": 0.0,
+        "is_reply_to_assistant": 1.0
+      }
+    },
+    {
+      "scenario_id": "s-212",
+      "conversation_id": "c-212",
+      "category": "follow_up_dependent",
+      "address_method": "reply",
+      "addressed_to_hush": true,
+      "gold_action": "SPEAK",
+      "predicted_action": "ASK",
+      "rule_predicted_action": "SPEAK",
+      "confidence": 0.4135,
+      "probabilities": {
+        "SILENT": 0.182374,
+        "SPEAK": 0.404079,
+        "ASK": 0.413547
+      },
+      "error_category": "SPEAK_VS_ASK_CONFUSION",
+      "explanation": "Model hesitated and chose ASK when direct answer was expected.",
+      "key_observable_features": {
+        "has_question_mark": 1.0,
+        "has_action_request": 1.0,
+        "has_underspecified_cue": 0.0,
+        "has_technical_spec": 0.0,
+        "has_social_banter": 0.0,
+        "is_reply_to_human": 0.0,
+        "is_reply_to_assistant": 1.0
+      }
+    },
+    {
+      "scenario_id": "s-215",
+      "conversation_id": "c-215",
+      "category": "follow_up_dependent",
+      "address_method": "reply",
+      "addressed_to_hush": true,
+      "gold_action": "SPEAK",
+      "predicted_action": "ASK",
+      "rule_predicted_action": "SPEAK",
+      "confidence": 0.4398,
+      "probabilities": {
+        "SILENT": 0.182226,
+        "SPEAK": 0.377963,
+        "ASK": 0.439811
+      },
+      "error_category": "SPEAK_VS_ASK_CONFUSION",
+      "explanation": "Model hesitated and chose ASK when direct answer was expected.",
+      "key_observable_features": {
+        "has_question_mark": 1.0,
+        "has_action_request": 1.0,
+        "has_underspecified_cue": 0.0,
+        "has_technical_spec": 0.0,
+        "has_social_banter": 0.0,
+        "is_reply_to_human": 0.0,
+        "is_reply_to_assistant": 1.0
+      }
+    },
+    {
+      "scenario_id": "s-223",
+      "conversation_id": "c-223",
+      "category": "follow_up_dependent",
+      "address_method": "reply",
+      "addressed_to_hush": true,
+      "gold_action": "ASK",
+      "predicted_action": "SPEAK",
+      "rule_predicted_action": "ASK",
+      "confidence": 0.399,
+      "probabilities": {
+        "SILENT": 0.204856,
+        "SPEAK": 0.398966,
+        "ASK": 0.396178
+      },
+      "error_category": "SPEAK_VS_ASK_CONFUSION",
+      "explanation": "Model attempted direct answer on an underspecified or incomplete request.",
+      "key_observable_features": {
+        "has_question_mark": 1.0,
+        "has_action_request": 0.0,
+        "has_underspecified_cue": 0.0,
+        "has_technical_spec": 0.0,
+        "has_social_banter": 0.0,
+        "is_reply_to_human": 0.0,
+        "is_reply_to_assistant": 1.0
+      }
+    },
+    {
+      "scenario_id": "s-225",
+      "conversation_id": "c-225",
+      "category": "follow_up_dependent",
+      "address_method": "reply",
+      "addressed_to_hush": true,
+      "gold_action": "ASK",
+      "predicted_action": "SPEAK",
+      "rule_predicted_action": "SPEAK",
+      "confidence": 0.4036,
+      "probabilities": {
+        "SILENT": 0.206711,
+        "SPEAK": 0.403614,
+        "ASK": 0.389675
+      },
+      "error_category": "SPEAK_VS_ASK_CONFUSION",
+      "explanation": "Model attempted direct answer on an underspecified or incomplete request.",
+      "key_observable_features": {
+        "has_question_mark": 1.0,
+        "has_action_request": 0.0,
+        "has_underspecified_cue": 0.0,
+        "has_technical_spec": 0.0,
+        "has_social_banter": 0.0,
+        "is_reply_to_human": 0.0,
+        "is_reply_to_assistant": 1.0
+      }
+    },
+    {
+      "scenario_id": "s-230",
+      "conversation_id": "c-230",
+      "category": "follow_up_dependent",
+      "address_method": "reply",
+      "addressed_to_hush": true,
+      "gold_action": "ASK",
+      "predicted_action": "SPEAK",
+      "rule_predicted_action": "SPEAK",
+      "confidence": 0.4118,
+      "probabilities": {
+        "SILENT": 0.207129,
+        "SPEAK": 0.411768,
+        "ASK": 0.381103
+      },
+      "error_category": "SPEAK_VS_ASK_CONFUSION",
+      "explanation": "Model attempted direct answer on an underspecified or incomplete request.",
+      "key_observable_features": {
+        "has_question_mark": 1.0,
+        "has_action_request": 0.0,
+        "has_underspecified_cue": 0.0,
+        "has_technical_spec": 0.0,
+        "has_social_banter": 0.0,
+        "is_reply_to_human": 0.0,
+        "is_reply_to_assistant": 1.0
+      }
+    }
+  ]
+}

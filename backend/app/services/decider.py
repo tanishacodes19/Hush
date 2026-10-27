@@ -5,9 +5,10 @@ Supports an explicitly labelled development stub mode and fails clearly
 when real mode is configured but hush_gate is unavailable.
 """
 
-from typing import Protocol
+from typing import Optional, Protocol
 from app.config import settings
-from app.schemas import Action, DecisionResult, Message
+from app.schemas import Action, AddressingResult, DecisionResult, Message
+from app.services.addressing import resolve_addressing
 
 
 class DeciderAdapter(Protocol):
@@ -24,40 +25,74 @@ class DevelopmentStubDecider:
     presenting stub heuristics as real model measurements.
     """
 
-    def decide(self, messages: list[Message]) -> DecisionResult:
+    def decide(
+        self,
+        messages: list[Message],
+        addressing: Optional[AddressingResult] = None,
+    ) -> DecisionResult:
         if not messages:
             return DecisionResult(
                 action=Action.SILENT,
                 confidence=None,
+                confidence_kind="none",
+                method="stub",
                 fallback_used=False,
                 decision_latency_ms=None,
+            )
+
+        # Resolve addressing if not explicitly provided
+        if addressing is None:
+            latest = messages[-1]
+            addressing = resolve_addressing(
+                message_text=latest.text,
+                mentions=latest.mentions,
+                reply_to=latest.reply_to,
+                conversation_history=messages[:-1],
             )
 
         latest_text = messages[-1].text.strip().lower()
 
-        # Deterministic development stub heuristics:
-        # 1. Direct mention or address to Hush -> SPEAK
-        if "hush" in latest_text or latest_text.startswith("@hush"):
+        # 1. Message is directly addressed to Hush (Tier 1 or Tier 2) -> SPEAK
+        if addressing.addressed_to_hush:
             return DecisionResult(
                 action=Action.SPEAK,
                 confidence=None,
+                confidence_kind="none",
+                method="rules",
                 fallback_used=False,
                 decision_latency_ms=None,
             )
 
-        # 2. Contains question mark or explicit request for clarification -> ASK
+        # 2. Metadata directs message elsewhere (Tier 1) or addressed to another person -> SILENT
+        if (addressing.tier == 1 and not addressing.addressed_to_hush) or (
+            "addressed to another" in addressing.reason.lower()
+        ):
+            return DecisionResult(
+                action=Action.SILENT,
+                confidence=None,
+                confidence_kind="none",
+                method="rules",
+                fallback_used=False,
+                decision_latency_ms=None,
+            )
+
+        # 3. Unaddressed group question or error needing clarification -> ASK
         if "?" in latest_text or "help" in latest_text or "error" in latest_text:
             return DecisionResult(
                 action=Action.ASK,
                 confidence=None,
+                confidence_kind="none",
+                method="rules",
                 fallback_used=False,
                 decision_latency_ms=None,
             )
 
-        # 3. Default to silence -> SILENT
+        # 4. Default to silence -> SILENT
         return DecisionResult(
             action=Action.SILENT,
             confidence=None,
+            confidence_kind="none",
+            method="rules",
             fallback_used=False,
             decision_latency_ms=None,
         )
