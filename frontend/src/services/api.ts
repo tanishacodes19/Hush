@@ -1,7 +1,11 @@
 import { ChatMessageRequest, ChatMessageResponse } from '../types/api';
 import { SAMPLE_SCENARIOS } from '../data/sampleScenarios';
 
-const API_BASE_URL = 'http://localhost:8000';
+const rawBaseUrl = import.meta.env.VITE_API_BASE_URL;
+const API_BASE_URL =
+  rawBaseUrl !== undefined && rawBaseUrl.trim() !== ''
+    ? rawBaseUrl.trim().replace(/\/+$/, '')
+    : (import.meta.env.DEV ? 'http://localhost:8000' : '');
 
 export interface SendMessageResult {
   response: ChatMessageResponse;
@@ -15,7 +19,7 @@ export interface SendMessageResult {
 export async function sendMessage(request: ChatMessageRequest): Promise<SendMessageResult> {
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3500);
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
 
     const res = await fetch(`${API_BASE_URL}/api/chat/message`, {
       method: 'POST',
