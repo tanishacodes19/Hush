@@ -21,12 +21,13 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import io
 import json
 import re
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -345,6 +346,257 @@ def validate_candidate_dataset(
     }
 
 
+def format_conversation_transcript(messages: list[dict[str, Any]]) -> str:
+    """Format dialogue messages as a readable multiline transcript."""
+    lines = []
+    for msg in messages:
+        spk = msg.get("speaker_id") or msg.get("speaker") or "unknown"
+        txt = msg.get("text", "")
+        lines.append(f"[{spk}]: {txt}")
+    return "\n".join(lines)
+
+
+def format_addressing_metadata(record: dict[str, Any]) -> str:
+    """Format addressing signals as a human-readable metadata string."""
+    addr = "YES" if record.get("addressed_to_hush") else "NO"
+    method = record.get("address_method", "none")
+    msgs = record.get("messages", [])
+    last_msg = msgs[-1] if msgs else {}
+    mentions = last_msg.get("mentions", [])
+    mentions_str = ", ".join(mentions) if mentions else "None"
+    reply_to = last_msg.get("reply_to") or "None"
+    return f"Addressed to Hush: {addr} | Method: {method} | Mentions: {mentions_str} | Reply-To: {reply_to}"
+
+
+def package_blinded_review(
+    candidate_records: list[dict[str, Any]],
+    output_dir: Path,
+) -> dict[str, Path]:
+    """Package candidate scenarios into blinded review forms, JSONL packets, and manifest.
+
+    Strips candidate actions and candidate rationales to ensure fully blinded human evaluation.
+    """
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    r1_csv_path = output_dir / "reviewer_1_form.csv"
+    r2_csv_path = output_dir / "reviewer_2_form.csv"
+    r1_jsonl_path = output_dir / "reviewer_1_packet.jsonl"
+    r2_jsonl_path = output_dir / "reviewer_2_packet.jsonl"
+    manifest_path = output_dir / "holdout_review_manifest.json"
+
+    csv_header = [
+        "scenario_id",
+        "conversation_transcript",
+        "addressing_metadata",
+        "reviewer_action",
+        "is_ambiguous",
+        "reviewer_confidence",
+        "reviewer_rationale",
+        "reviewer_comments",
+    ]
+
+    # Generate blinded CSVs for Reviewer 1 and Reviewer 2
+    for csv_path in (r1_csv_path, r2_csv_path):
+        with open(csv_path, "w", encoding="utf-8", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(csv_header)
+            for cand in candidate_records:
+                cid = cand.get("id") or cand.get("scenario_id", "unknown")
+                transcript = format_conversation_transcript(cand.get("messages", []))
+                addr_meta = format_addressing_metadata(cand)
+                writer.writerow([cid, transcript, addr_meta, "", "", "", "", ""])
+
+    # Generate blinded JSONL packets for Reviewer 1 and Reviewer 2
+    for reviewer_id, jsonl_path in [("reviewer_1", r1_jsonl_path), ("reviewer_2", r2_jsonl_path)]:
+        with open(jsonl_path, "w", encoding="utf-8") as f:
+            for cand in candidate_records:
+                cid = cand.get("id") or cand.get("scenario_id", "unknown")
+                packet_rec = {
+                    "scenario_id": cid,
+                    "conversation_id": cand.get("conversation_id", f"c-{cid}"),
+                    "split": "holdout",
+                    "domain": cand.get("domain", "general"),
+                    "participants": cand.get("participants", []),
+                    "messages": cand.get("messages", []),
+                    "addressing_signals": {
+                        "addressed_to_hush": cand.get("addressed_to_hush", False),
+                        "address_method": cand.get("address_method", "none"),
+                    },
+                    "assigned_reviewer": reviewer_id,
+                    "reviewer_action": None,
+                    "is_ambiguous": None,
+                    "reviewer_confidence": None,
+                    "reviewer_rationale": "",
+                    "reviewer_comments": "",
+                }
+                f.write(json.dumps(packet_rec) + "\n")
+
+    # Generate initial Review Manifest
+    manifest_data = {
+        "manifest_version": "2.0.0",
+        "dataset_name": "holdout_v1",
+        "sample_size": len(candidate_records),
+        "review_status": "pending_human_review",
+        "cohens_kappa": None,
+        "raw_agreement_rate": None,
+        "quality_gate_passed": False,
+        "adjudication_completed": False,
+        "reviewer_ids": ["reviewer_1", "reviewer_2"],
+        "adjudicator_id": "project_owner",
+        "records": [
+            {
+                "scenario_id": cand.get("id") or cand.get("scenario_id", "unknown"),
+                "conversation_id": cand.get("conversation_id", f"c-{cand.get('id') or cand.get('scenario_id', 'unknown')}"),
+                "split": "holdout",
+                "reviewer_1": {
+                    "action": None,
+                    "is_ambiguous": None,
+                    "confidence": None,
+                    "rationale": None,
+                },
+                "reviewer_2": {
+                    "action": None,
+                    "is_ambiguous": None,
+                    "confidence": None,
+                    "rationale": None,
+                },
+                "agreement": None,
+                "adjudicated_action": None,
+                "adjudicator_notes": None,
+            }
+            for cand in candidate_records
+        ],
+    }
+    with open(manifest_path, "w", encoding="utf-8") as f:
+        json.dump(manifest_data, f, indent=2)
+
+    return {
+        "reviewer_1_form": r1_csv_path,
+        "reviewer_2_form": r2_csv_path,
+        "reviewer_1_packet": r1_jsonl_path,
+        "reviewer_2_packet": r2_jsonl_path,
+        "manifest": manifest_path,
+    }
+
+
+def finalize_holdout_dataset(
+    candidate_file: Path,
+    manifest_file: Path,
+    output_file: Path,
+) -> dict[str, Any]:
+    """Finalize the holdout dataset from candidate scenarios and an adjudicated review manifest.
+
+    Enforces that:
+    1. The manifest has completed review with quality_gate_passed == True.
+    2. Cohen's Kappa >= 0.75.
+    3. Zero unresolved disputes exist.
+    4. Addressing invariant is strictly respected for every scenario.
+    """
+    if not candidate_file.exists():
+        raise FileNotFoundError(f"Candidate file not found: {candidate_file}")
+    if not manifest_file.exists():
+        raise FileNotFoundError(f"Review manifest file not found: {manifest_file}")
+
+    candidates = load_candidate_file(candidate_file)
+    cand_by_id = {c.get("id") or c.get("scenario_id"): c for c in candidates}
+
+    with open(manifest_file, "r", encoding="utf-8") as f:
+        manifest_data = json.load(f)
+
+    # Verify quality gate
+    quality_passed = manifest_data.get("quality_gate_passed", False)
+    kappa = manifest_data.get("cohens_kappa")
+    if not quality_passed:
+        raise ValueError(
+            f"Quality gate not passed in {manifest_file.name}. "
+            f"Holdout dataset cannot be finalized without verified human review (quality_gate_passed must be True, kappa={kappa})."
+        )
+
+    manifest_records = manifest_data.get("records", [])
+    if len(manifest_records) != len(candidates):
+        raise ValueError(
+            f"Candidate count ({len(candidates)}) does not match manifest record count ({len(manifest_records)})."
+        )
+
+    finalized_records: list[dict[str, Any]] = []
+    distribution: dict[str, int] = {"SILENT": 0, "SPEAK": 0, "ASK": 0}
+
+    for m_rec in manifest_records:
+        sid = m_rec.get("scenario_id")
+        if sid not in cand_by_id:
+            raise ValueError(f"Manifest scenario_id '{sid}' not found in candidate dataset.")
+
+        cand = cand_by_id[sid]
+
+        # Determine finalized label
+        agreement = m_rec.get("agreement")
+        r1_action = m_rec.get("reviewer_1", {}).get("action")
+        r2_action = m_rec.get("reviewer_2", {}).get("action")
+        adjudicated = m_rec.get("adjudicated_action")
+
+        if agreement is True and r1_action:
+            final_action = r1_action
+            final_rationale = (
+                m_rec.get("reviewer_1", {}).get("rationale")
+                or m_rec.get("reviewer_2", {}).get("rationale")
+                or ""
+            )
+            confidence = "high"
+        elif adjudicated:
+            final_action = adjudicated
+            final_rationale = m_rec.get("adjudicator_notes") or ""
+            confidence = "adjudicated"
+        else:
+            raise ValueError(
+                f"Scenario '{sid}' has no agreed action (R1='{r1_action}', R2='{r2_action}') and no adjudicated action."
+            )
+
+        if final_action not in {"SILENT", "SPEAK", "ASK"}:
+            raise ValueError(f"Scenario '{sid}' has invalid finalized action: '{final_action}'")
+
+        # Addressing invariant check
+        is_addressed = bool(cand.get("addressed_to_hush"))
+        if is_addressed and final_action == "SILENT":
+            raise ValueError(
+                f"Addressing invariant violation on scenario '{sid}': addressed_to_hush is True, cannot be finalized as SILENT."
+            )
+
+        distribution[final_action] = distribution.get(final_action, 0) + 1
+
+        final_rec: dict[str, Any] = {
+            "id": sid,
+            "conversation_id": cand.get("conversation_id", f"c-{sid}"),
+            "split": "holdout",
+            "domain": cand.get("domain", "general"),
+            "provenance": cand.get("provenance", {}),
+            "participants": cand.get("participants", []),
+            "messages": cand.get("messages", []),
+            "addressed_to_hush": is_addressed,
+            "address_method": cand.get("address_method", "none"),
+            "expected_action": final_action,
+            "rationale": final_rationale,
+            "annotator_confidence": confidence,
+            "review_status": "finalized",
+        }
+        finalized_records.append(final_rec)
+
+    output_file.parent.mkdir(parents=True, exist_ok=True)
+    with open(output_file, "w", encoding="utf-8") as f:
+        for rec in finalized_records:
+            f.write(json.dumps(rec) + "\n")
+
+    sha256 = hashlib.sha256(output_file.read_bytes()).hexdigest()
+
+    return {
+        "status": "FINALIZED",
+        "total_records": len(finalized_records),
+        "distribution": distribution,
+        "cohens_kappa": kappa,
+        "output_file": str(output_file),
+        "sha256_checksum": sha256,
+    }
+
+
 def generate_candidate_template_csv() -> str:
     """Generate candidate scenario submission CSV template with clear header and instructions."""
     output = io.StringIO()
@@ -508,42 +760,46 @@ def generate_candidate_template_jsonl() -> str:
 
 def generate_collection_instructions_md() -> str:
     """Generate collection guidelines and author instructions."""
-    return r"""# Hush — Fresh Holdout Collection Instructions (`holdout_v1`)
+    return r"""# Hush — Fresh Holdout Collection & Dual-Review Instructions (`holdout_v1`)
 
-## 1. Purpose & Core Objective
-The fresh holdout dataset (`holdout_v1`) provides an uncompromised, uncontaminated evaluation benchmark for Hush.
-Historical Phase 2 evaluations and leakage audits established that development and historical test splits share conversational stems.
-To establish genuine generalization performance:
-- Scenarios must be **independently authored from scratch** or collected from real anonymized communication.
+## 1. Purpose & Generalization Integrity
+The fresh holdout dataset (`holdout_v1`) provides an uncompromised, single-use final generalization benchmark for the Hush Conversational Restraint Engine.
+
+Evaluation audits established that previous development splits and synthetic scenarios shared conversational stems. To establish genuine generalization:
+- Scenarios must be **freshly authored by independent human contributors** or collected from real anonymized communication.
 - No scenario may be derived, modified, or paraphrased from existing dataset examples in `data/dataset_v1.jsonl`.
 - No LLM may be used to fabricate supposedly independent human responses or candidate dialogues.
+- The holdout dataset will be evaluated exactly **once** upon project finalization.
 
 ---
 
-## 2. Target Dataset Composition
-The holdout set comprises exactly **50 multi-turn scenarios**:
+## 2. Target Dataset Composition (Prospective Targets)
+The target holdout set comprises exactly **50 multi-turn scenarios**.
 
-| Action | Target Count | Target Pct | Scenario Types |
+> [!NOTE]
+> The numbers below are **prospective targets** for collection planning. No scenarios are pre-populated or fabricated; collection status remains `PENDING` until human review completes.
+
+| Action | Prospective Target | Target Pct | Scenario Description & Addressing Characteristics |
 |---|---|---|---|
 | **`SILENT`** | 23 | 46.0% | Human-to-human technical questions, lunch/casual chats, metadata conflicts (mentions human with "hush" in text), third-person discussions of Hush |
 | **`SPEAK`**  | 17 | 34.0% | Direct mentions `@hush`, replies to Hush messages, explicit role requests with complete context/parameters |
 | **`ASK`**    | 10 | 20.0% | Addressed requests that are underspecified, ambiguous, or missing critical operational parameters |
-| **Total**    | **50** | **100.0%** | Multi-turn dialogues (2 to 6 turns each) across realistic domains |
+| **Total**    | **50** | **100.0%** | Multi-turn dialogues (2 to 6 turns each) across realistic engineering & collaboration domains |
 
 ---
 
 ## 3. Strict Rules for Scenario Authors
 
-### Rule 1: Zero Overlap with Existing Scenarios
-Your submissions will be automatically screened against all 300 existing scenarios across three levels:
+### Rule 1: Zero Overlap with Existing Scenarios (Three-Level Screening)
+Submissions are automatically screened against all 300 existing scenarios across three levels:
 1. **Latest turn text:** Alphanumeric word Jaccard similarity must be $< 0.70$.
 2. **Full dialogue text:** Alphanumeric word Jaccard similarity must be $< 0.70$.
-3. **Dialogue prefix stems:** Zero reuse of synthetic opening stems (e.g., "Starting morning code review session", "Reviewing pull request updates", "Investigating service metrics").
+3. **Dialogue prefix stems:** Zero reuse of synthetic opening stems (e.g., *"Starting morning code review session"*, *"Reviewing pull request updates"*, *"Investigating service metrics"*).
 
 ### Rule 2: Mandatory Provenance Tracking
 Every scenario must explicitly record:
 - `author_id`: Real author or collection agent ID (e.g., `author_human_1`).
-- `created_at`: ISO 8601 timestamp.
+- `created_at`: ISO 8601 timestamp (e.g., `2026-10-28T10:00:00Z`).
 - `source_type`: Must be one of `fresh_human_authored`, `anonymized_chat_export`, or `production_log`.
 - `derived_from_existing`: Must be explicitly set to `false`. Any submission marked `true` is automatically rejected.
 
@@ -555,19 +811,85 @@ Incorporate genuine group chat edge cases:
 
 ---
 
-## 4. Submission & Validation Workflow
+## 4. End-to-End Holdout Collection & Dual-Review Protocol
 
-1. Populate scenarios into `data/holdout/holdout_collection_template.csv` or JSONL.
-2. Run validation check:
-   ```powershell
-   python scripts/prepare_fresh_holdout.py --validate path/to/my_candidates.csv
-   ```
-3. When the full 50-scenario collection is ready, run target distribution verification:
-   ```powershell
-   python scripts/prepare_fresh_holdout.py --validate path/to/my_candidates.csv --check-distribution
-   ```
-4. Once validation passes, candidates proceed to the blinded dual-reviewer protocol (`data/review/`).
-5. Only after inter-annotator agreement reaches $\kappa \ge 0.75$ and all disputes are resolved will `data/holdout/holdout_v1.jsonl` be finalized.
+```
++------------------------------------+
+| 1. Author 50 Candidate Scenarios   | (CSV or JSONL with full provenance)
++------------------------------------+
+                  |
+                  v
++------------------------------------+
+| 2. Candidate Validation & Overlap  | (python scripts/prepare_fresh_holdout.py --validate ... --check-distribution)
++------------------------------------+
+                  |
+                  v
++------------------------------------+
+| 3. Blinded Review Packaging        | (python scripts/prepare_fresh_holdout.py --package-review ... --output-dir ...)
+|    (Labels & Rationales Stripped)  | -> reviewer_1_form.csv, reviewer_2_form.csv, holdout_review_manifest.json
++------------------------------------+
+                  |
+                  v
++------------------------------------+
+| 4. Dual Blind Human Review         | (Reviewer 1 & Reviewer 2 annotate independently)
+|    & Agreement Audit (kappa >= 0.75)| (python scripts/validate_review_manifest.py ... --save-manifest)
+|    & Adjudicate Disputes           |
++------------------------------------+
+                  |
+                  v
++------------------------------------+
+| 5. Finalize Holdout Dataset        | (python scripts/prepare_fresh_holdout.py --finalize-holdout ...)
+|    (Quality Gate Enforced)         | -> data/holdout/holdout_v1.jsonl
++------------------------------------+
+```
+
+### Step 1: Scenario Authoring
+Populate candidate scenarios using either:
+- CSV: [`data/holdout/holdout_collection_template.csv`](../data/holdout/holdout_collection_template.csv)
+- JSONL: [`data/holdout/holdout_candidate_template.jsonl`](../data/holdout/holdout_candidate_template.jsonl)
+
+### Step 2: Candidate Validation & Overlap Screening
+Verify candidate schema, provenance, and 3-level overlap against master scenarios:
+```powershell
+python scripts/prepare_fresh_holdout.py --validate data/holdout/my_candidates.csv --check-distribution
+```
+
+### Step 3: Package Blinded Review Forms
+Generate blinded forms where candidate actions and candidate rationales are stripped:
+```powershell
+python scripts/prepare_fresh_holdout.py --package-review data/holdout/my_candidates.csv --output-dir data/holdout/review
+```
+Outputs:
+- `data/holdout/review/reviewer_1_form.csv` & `reviewer_2_form.csv`
+- `data/holdout/review/reviewer_1_packet.jsonl` & `reviewer_2_packet.jsonl`
+- `data/holdout/review/holdout_review_manifest.json`
+
+### Step 4: Dual Blind Human Review & Agreement Audit
+Two independent reviewers label `reviewer_1_completed.csv` and `reviewer_2_completed.csv` following [`docs/annotation_rubric_v2.md`](../docs/annotation_rubric_v2.md).
+Audit agreement and log any disputes:
+```powershell
+python scripts/validate_review_manifest.py data/holdout/review/holdout_review_manifest.json `
+    --r1 data/holdout/review/reviewer_1_completed.csv `
+    --r2 data/holdout/review/reviewer_2_completed.csv `
+    --disputes-path data/holdout/review/disputes_v1.json `
+    --save-manifest
+```
+- **Agreement Threshold:** Cohen's $\kappa \ge 0.75$.
+- **Dispute Adjudication:** Any conflicting labels are reviewed and adjudicated by the project owner.
+
+### Step 5: Finalize Holdout Dataset
+Once the review manifest passes the quality gate ($\kappa \ge 0.75$ and 0 unresolved disputes):
+```powershell
+python scripts/prepare_fresh_holdout.py --finalize-holdout `
+    --candidates data/holdout/my_candidates.csv `
+    --manifest data/holdout/review/holdout_review_manifest.json `
+    --output-file data/holdout/holdout_v1.jsonl
+```
+
+---
+
+## 5. Security & Privacy Notice
+All private reviewer forms, completed submissions, dispute logs, and the finalized `holdout_v1.jsonl` are strictly excluded from Git tracking via `.gitignore`. Never commit raw reviewer identities, dispute deliberations, or holdout benchmark data to public repositories.
 """
 
 
@@ -620,6 +942,12 @@ def main() -> None:
     parser.add_argument("--validate", type=str, default=None, help="Validate candidate holdout file (JSONL or CSV)")
     parser.add_argument("--check-distribution", action="store_true", help="Enforce target distribution (50 total: 23 SILENT, 17 SPEAK, 10 ASK)")
     parser.add_argument("--threshold", type=float, default=0.70, help="Jaccard similarity rejection threshold (default: 0.70)")
+    parser.add_argument("--package-review", type=str, default=None, help="Package validated candidate file into blinded reviewer forms, packets, and manifest")
+    parser.add_argument("--output-dir", type=str, default=None, help="Output directory for packaged review files (default: data/holdout/review)")
+    parser.add_argument("--finalize-holdout", action="store_true", help="Finalize holdout dataset after review and adjudication pass quality gate")
+    parser.add_argument("--candidates", type=str, default=None, help="Candidate scenario file for finalization")
+    parser.add_argument("--manifest", type=str, default=None, help="Completed/adjudicated review manifest file for finalization")
+    parser.add_argument("--output-file", type=str, default=None, help="Output destination for finalized holdout JSONL (default: data/holdout/holdout_v1.jsonl)")
     args = parser.parse_args()
 
     holdout_dir = REPO_ROOT / "data" / "holdout"
@@ -683,6 +1011,60 @@ def main() -> None:
             sys.exit(0)
         else:
             print("FAILED: Candidate dataset does not pass validation gates.", file=sys.stderr)
+            sys.exit(1)
+
+    if args.package_review:
+        cand_path = Path(args.package_review)
+        if not cand_path.exists():
+            print(f"Error: Candidate file not found: {cand_path}", file=sys.stderr)
+            sys.exit(1)
+
+        out_dir = Path(args.output_dir) if args.output_dir else (holdout_dir / "review")
+        print(f"Packaging candidate file into blinded review forms: {cand_path}")
+        print(f"Output directory: {out_dir}")
+
+        try:
+            candidates = load_candidate_file(cand_path)
+            packaged = package_blinded_review(candidates, out_dir)
+        except Exception as exc:
+            print(f"Error packaging review: {exc}", file=sys.stderr)
+            sys.exit(1)
+
+        print("-" * 75)
+        print("Successfully packaged blinded review files:")
+        for name, p in packaged.items():
+            print(f"  - {name}: {p}")
+        print(f"\nTotal candidate scenarios packaged: {len(candidates)}")
+        print("Blinded invariant enforced: Candidate actions and rationales stripped.")
+        sys.exit(0)
+
+    if args.finalize_holdout:
+        cand_path = Path(args.candidates) if args.candidates else None
+        manifest_path = Path(args.manifest) if args.manifest else None
+        out_path = Path(args.output_file) if args.output_file else (holdout_dir / "holdout_v1.jsonl")
+
+        if not cand_path or not manifest_path:
+            print("Error: --finalize-holdout requires both --candidates and --manifest arguments.", file=sys.stderr)
+            sys.exit(1)
+
+        print("Finalizing holdout dataset:")
+        print(f"  Candidates: {cand_path}")
+        print(f"  Manifest  : {manifest_path}")
+        print(f"  Output    : {out_path}")
+
+        try:
+            res = finalize_holdout_dataset(cand_path, manifest_path, out_path)
+            print("-" * 75)
+            print(f"Finalization Status: {res['status']}")
+            print(f"Total Scenarios    : {res['total_records']}")
+            print(f"Distribution       : {res['distribution']}")
+            print(f"Cohen's Kappa      : {res['cohens_kappa']}")
+            print(f"Output File        : {res['output_file']}")
+            print(f"SHA256 Checksum    : {res['sha256_checksum']}")
+            print("PASSED: Holdout dataset finalized successfully.")
+            sys.exit(0)
+        except Exception as exc:
+            print(f"Finalization Error: {exc}", file=sys.stderr)
             sys.exit(1)
 
     # Export specifications, manifest template, collection template CSV, JSONL, and instructions

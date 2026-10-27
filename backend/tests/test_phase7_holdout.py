@@ -17,7 +17,9 @@ from scripts.prepare_fresh_holdout import (
     TARGET_DISTRIBUTION,
     TARGET_TOTAL,
     check_holdout_overlap,
+    finalize_holdout_dataset,
     load_candidate_file,
+    package_blinded_review,
     validate_candidate_dataset,
     validate_candidate_record_schema,
 )
@@ -196,15 +198,13 @@ def test_holdout_quarantine_integrity():
     holdout_file = REPO_ROOT / "data" / "holdout" / "holdout_v1.jsonl"
     assert not holdout_file.exists(), "holdout_v1.jsonl must not be created prematurely"
 
-    # 2. Existing master and split files must match exact recorded SHA256 checksums
-    expected_checksums = {
+    # 2. Existing public master and split files must match exact recorded SHA256 checksums
+    public_checksums = {
         REPO_ROOT / "data" / "dataset_v1.jsonl": "64bd1f39e1bc589361b2281537d384f59470ff28309a39d416c0b5f77b5bc0fb",
         REPO_ROOT / "data" / "splits" / "dev.jsonl": "d2b1928c0fe8db97ba5efab35fd6e0d2ebd07de71a6d6e984e1cb5346f861aa6",
         REPO_ROOT / "data" / "splits" / "test.jsonl": "f0c7d4284e3c8df32d0d72021b2ce746f2c56fe4e32c1abd9183f56a0a5ff543",
-        REPO_ROOT / "data" / "review" / "reviewer_1_completed.csv": "f832f322394d79a52f5c0d012ce25f31e7485e6da74343802b6f0c86e3e54e52",
-        REPO_ROOT / "data" / "review" / "reviewer_2_completed.csv": "26ad48438f89d1e013c75991fcbcd415e0e939c61ef329f0872e5ccc6ccd95fc",
     }
-    for path, expected_hash in expected_checksums.items():
+    for path, expected_hash in public_checksums.items():
         assert path.exists(), f"File missing: {path}"
         actual_hash = hashlib.sha256(path.read_bytes()).hexdigest()
         assert actual_hash == expected_hash, f"Checksum mismatch for {path}: expected {expected_hash}, got {actual_hash}"
@@ -216,3 +216,183 @@ def test_holdout_quarantine_integrity():
     assert decision.action == Action.SILENT
     assert decision.confidence is None
     assert generator_mock.call_count == 0
+
+    # 4. Private review files (gitignored; verified when present in local development workspace)
+    private_checksums = {
+        REPO_ROOT / "data" / "review" / "reviewer_1_completed.csv": "f832f322394d79a52f5c0d012ce25f31e7485e6da74343802b6f0c86e3e54e52",
+        REPO_ROOT / "data" / "review" / "reviewer_2_completed.csv": "26ad48438f89d1e013c75991fcbcd415e0e939c61ef329f0872e5ccc6ccd95fc",
+    }
+    for path in private_checksums:
+        if not path.exists():
+            pytest.skip("private review artifacts not present (gitignored)")
+
+    for path, expected_hash in private_checksums.items():
+        assert path.exists(), f"File missing: {path}"
+        actual_hash = hashlib.sha256(path.read_bytes()).hexdigest()
+        assert actual_hash == expected_hash, f"Checksum mismatch for {path}: expected {expected_hash}, got {actual_hash}"
+
+
+def test_package_blinded_review_workflow(tmp_path):
+    """Verify package_blinded_review generates all required reviewer artifacts with ground-truth blinded."""
+    candidates = [
+        {
+            "id": "cand-001",
+            "domain": "engineering",
+            "provenance": {
+                "author_id": "author_1",
+                "created_at": "2026-10-28T00:00:00Z",
+                "source_type": "fresh_human_authored",
+                "derived_from_existing": False,
+            },
+            "participants": [
+                {"speaker_id": "u-dev1", "display_name": "Dev 1", "role": "human"},
+                {"speaker_id": "hush", "display_name": "Hush", "role": "assistant"},
+            ],
+            "messages": [
+                {"message_id": "m1", "speaker_id": "u-dev1", "text": "Starting morning sync."},
+                {"message_id": "m2", "speaker_id": "u-dev1", "text": "@hush how do we configure TLS?"},
+            ],
+            "addressed_to_hush": True,
+            "address_method": "mention",
+            "candidate_action": "SPEAK",
+            "candidate_rationale": "Direct addressed technical question.",
+        }
+    ]
+
+    packaged = package_blinded_review(candidates, tmp_path)
+    assert packaged["reviewer_1_form"].exists()
+    assert packaged["reviewer_2_form"].exists()
+    assert packaged["reviewer_1_packet"].exists()
+    assert packaged["reviewer_2_packet"].exists()
+    assert packaged["manifest"].exists()
+
+    # Check blinded CSV: candidate_action and candidate_rationale must not be columns
+    with open(packaged["reviewer_1_form"], "r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        assert "candidate_action" not in reader.fieldnames
+        assert "candidate_rationale" not in reader.fieldnames
+        assert "reviewer_action" in reader.fieldnames
+        rows = list(reader)
+        assert len(rows) == 1
+        assert rows[0]["scenario_id"] == "cand-001"
+        assert rows[0]["reviewer_action"] == ""
+
+    # Check blinded JSONL packet: candidate_action must be stripped
+    with open(packaged["reviewer_1_packet"], "r", encoding="utf-8") as f:
+        packet_lines = [json.loads(line) for line in f if line.strip()]
+        assert len(packet_lines) == 1
+        assert "candidate_action" not in packet_lines[0]
+        assert "candidate_rationale" not in packet_lines[0]
+        assert packet_lines[0]["assigned_reviewer"] == "reviewer_1"
+        assert packet_lines[0]["reviewer_action"] is None
+
+    # Check manifest initial state
+    with open(packaged["manifest"], "r", encoding="utf-8") as f:
+        m = json.load(f)
+        assert m["review_status"] == "pending_human_review"
+        assert m["quality_gate_passed"] is False
+        assert len(m["records"]) == 1
+        assert m["records"][0]["reviewer_1"]["action"] is None
+
+
+def test_finalize_holdout_quality_gate_enforcement(tmp_path):
+    """Verify finalize_holdout_dataset blocks incomplete reviews and enforces invariants."""
+    cand_file = tmp_path / "candidates.jsonl"
+    cand_record = {
+        "id": "cand-001",
+        "domain": "engineering",
+        "provenance": {
+            "author_id": "author_1",
+            "created_at": "2026-10-28T00:00:00Z",
+            "source_type": "fresh_human_authored",
+            "derived_from_existing": False,
+        },
+        "participants": [
+            {"speaker_id": "u-dev1", "display_name": "Dev 1", "role": "human"},
+            {"speaker_id": "hush", "display_name": "Hush", "role": "assistant"},
+        ],
+        "messages": [
+            {"message_id": "m1", "speaker_id": "u-dev1", "text": "Morning sync."},
+            {"message_id": "m2", "speaker_id": "u-dev1", "text": "@hush how to reload nginx?"},
+        ],
+        "addressed_to_hush": True,
+        "address_method": "mention",
+        "candidate_action": "SPEAK",
+    }
+    cand_file.write_text(json.dumps(cand_record) + "\n", encoding="utf-8")
+
+    manifest_file = tmp_path / "manifest.json"
+    output_file = tmp_path / "holdout_v1.jsonl"
+
+    # Case 1: Quality gate NOT passed -> must raise ValueError
+    unverified_manifest = {
+        "manifest_version": "2.0.0",
+        "quality_gate_passed": False,
+        "cohens_kappa": None,
+        "records": [
+            {
+                "scenario_id": "cand-001",
+                "reviewer_1": {"action": None},
+                "reviewer_2": {"action": None},
+                "agreement": None,
+            }
+        ],
+    }
+    manifest_file.write_text(json.dumps(unverified_manifest), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="Quality gate not passed"):
+        finalize_holdout_dataset(cand_file, manifest_file, output_file)
+
+    # Case 2: Addressing invariant violation (addressed to hush, but action is SILENT)
+    invalid_action_manifest = {
+        "manifest_version": "2.0.0",
+        "quality_gate_passed": True,
+        "cohens_kappa": 0.85,
+        "records": [
+            {
+                "scenario_id": "cand-001",
+                "reviewer_1": {"action": "SILENT", "rationale": "Erroneously silent"},
+                "reviewer_2": {"action": "SILENT", "rationale": "Erroneously silent"},
+                "agreement": True,
+                "adjudicated_action": None,
+            }
+        ],
+    }
+    manifest_file.write_text(json.dumps(invalid_action_manifest), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="Addressing invariant violation"):
+        finalize_holdout_dataset(cand_file, manifest_file, output_file)
+
+    # Case 3: Successful finalization when gate passes
+    valid_manifest = {
+        "manifest_version": "2.0.0",
+        "quality_gate_passed": True,
+        "cohens_kappa": 0.90,
+        "records": [
+            {
+                "scenario_id": "cand-001",
+                "reviewer_1": {"action": "SPEAK", "rationale": "Clear technical command"},
+                "reviewer_2": {"action": "SPEAK", "rationale": "Clear technical command"},
+                "agreement": True,
+                "adjudicated_action": None,
+            }
+        ],
+    }
+    manifest_file.write_text(json.dumps(valid_manifest), encoding="utf-8")
+
+    res = finalize_holdout_dataset(cand_file, manifest_file, output_file)
+    assert res["status"] == "FINALIZED"
+    assert res["total_records"] == 1
+    assert res["distribution"] == {"SILENT": 0, "SPEAK": 1, "ASK": 0}
+    assert output_file.exists()
+    assert len(res["sha256_checksum"]) == 64
+
+    # Verify finalized record contents
+    with open(output_file, "r", encoding="utf-8") as f:
+        final_recs = [json.loads(line) for line in f if line.strip()]
+        assert len(final_recs) == 1
+        assert final_recs[0]["id"] == "cand-001"
+        assert final_recs[0]["split"] == "holdout"
+        assert final_recs[0]["expected_action"] == "SPEAK"
+        assert final_recs[0]["review_status"] == "finalized"
+
