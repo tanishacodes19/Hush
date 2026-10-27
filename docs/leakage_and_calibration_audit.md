@@ -58,7 +58,7 @@
 ---
 
 ### 1.3 Holdout Overlap Checker Verification
-- The overlap tool [`scripts/prepare_fresh_holdout.py`](file:///c:/Users/Admin/Documents/Hush/scripts/prepare_fresh_holdout.py) was audited and verified:
+- The overlap tool [`scripts/prepare_fresh_holdout.py`](../scripts/prepare_fresh_holdout.py) was audited and verified:
   - Compares every candidate scenario against all 300 master scenarios.
   - Evaluates latest incoming turn, full concatenated dialogue, and conversational prefix turns.
   - Accurately catches exact prefix reuse even when final turns differ.
@@ -92,11 +92,11 @@ The following metrics are documented as **provisional research artifacts** subje
 
 ## 4. Code Changes Made & Regression Tests Added
 
-1. **Enhanced Holdout Overlap Tool ([`scripts/prepare_fresh_holdout.py`](file:///c:/Users/Admin/Documents/Hush/scripts/prepare_fresh_holdout.py)):**
+1. **Enhanced Holdout Overlap Tool ([`scripts/prepare_fresh_holdout.py`](../scripts/prepare_fresh_holdout.py)):**
    - Upgraded `check_holdout_overlap` to calculate latest message similarity, full dialogue similarity, and conversational prefix similarity.
    - Accurately tags `overlap_type` (`"latest_message"`, `"full_dialogue"`, `"dialogue_prefix"`).
-   - Synchronized exclusion criteria in [`data/holdout/holdout_spec.md`](file:///c:/Users/Admin/Documents/Hush/data/holdout/holdout_spec.md).
-2. **Regression Tests Added ([`backend/tests/test_phase5_integrity.py`](file:///c:/Users/Admin/Documents/Hush/backend/tests/test_phase5_integrity.py)):**
+   - Synchronized exclusion criteria in [`data/holdout/holdout_spec.md`](../data/holdout/holdout_spec.md).
+2. **Regression Tests Added ([`backend/tests/test_phase5_integrity.py`](../backend/tests/test_phase5_integrity.py)):**
    - `test_holdout_overlap_detection`: Extended to verify multi-turn prefix leakage detection.
    - `test_holdout_overlap_threshold_boundaries`: Verifies exact boundary behavior ($J=0.70$ triggers; $J=0.60$ passes; empty candidate handled cleanly).
 
@@ -121,7 +121,7 @@ All 176 tests across 14 test modules pass cleanly.
 
 ## 6. Next Actions
 
-1. **Deliver Blinded Forms:** Provide [`data/review/reviewer_1_form.csv`](file:///c:/Users/Admin/Documents/Hush/data/review/reviewer_1_form.csv) and [`data/review/reviewer_2_form.csv`](file:///c:/Users/Admin/Documents/Hush/data/review/reviewer_2_form.csv) to real human reviewers.
+1. **Deliver Blinded Forms:** Provide [`data/review/reviewer_1_form.csv`](../data/review/reviewer_1_form.csv) and [`data/review/reviewer_2_form.csv`](../data/review/reviewer_2_form.csv) to real human reviewers.
 2. **Maintain Status:** Keep manifest review status as `PENDING_HUMAN_REVIEW` until both completed forms are returned.
 3. **Execute Fresh Holdout Collection:** Collect 50 genuinely novel multi-turn scenarios adhering to the multi-level overlap filter and independent dual-review gate specified in Section 4.
 4. **Single-Use Final Benchmark:** Benchmark baseline deciders and ML classifier against `holdout_v1` strictly once after review arbitration has finalized ground truth.

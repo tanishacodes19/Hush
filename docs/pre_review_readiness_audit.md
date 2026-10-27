@@ -14,7 +14,7 @@ This pre-review readiness audit comprehensively evaluates the state of the Hush 
 
 **Core Findings:**
 1. **Human-Review Readiness Confirmed:** Dual reviewer packets and CSV forms are completely blinded. Zero gold labels, original rationales, scenario categories, or model predictions are exposed. The 60 scenarios are identical and in matching order.
-2. **Defensive Validation Operational:** Submission ingestion scripts defensively detect missing answers, invalid actions, duplicate scenario IDs, mismatched scenario sets, and manifest discrepancies. Cohen's kappa and 3x3 confusion matrices are computed strictly from submitted data. Disagreements are logged to [`data/review/disputes_v1.json`](file:///c:/Users/Admin/Documents/Hush/data/review/disputes_v1.json).
+2. **Defensive Validation Operational:** Submission ingestion scripts defensively detect missing answers, invalid actions, duplicate scenario IDs, mismatched scenario sets, and manifest discrepancies. Cohen's kappa and 3x3 confusion matrices are computed strictly from submitted data. Disagreements are logged to [`data/review/disputes_v1.json`](../data/review/disputes_v1.json).
 3. **Evidence Integrity Strictly Preserved:** Review status remains `PENDING_HUMAN_REVIEW` (0 / 60 scenarios completed). No reviewer responses, timestamps, agreement figures, or synthetic decisions were fabricated.
 4. **Critical Epistemic Risks Documented:**
    - **Template & Prefix Leakage:** 51 scenario pairs across `dev` and `test` exhibit word Jaccard similarity $\ge 0.70$ due to synthetic prompt templates and shared multi-turn conversation prefixes.
@@ -26,19 +26,19 @@ This pre-review readiness audit comprehensively evaluates the state of the Hush 
 
 ## 2. Review Packet & CSV Form Readiness
 
-All reviewer artifacts in [`data/review/`](file:///c:/Users/Admin/Documents/Hush/data/review) were audited programmatically and verified:
+All reviewer artifacts in [`data/review/`](../data/review) were audited programmatically and verified:
 
 | Artifact | Format | Item Count | Blinding Verification | Annotation Fields Present | Status |
 |---|---|---|---|---|---|
-| [`reviewer_1_packet.jsonl`](file:///c:/Users/Admin/Documents/Hush/data/review/reviewer_1_packet.jsonl) | JSONL | 60 | Zero gold labels, rationales, categories, or predictions. | `reviewer_action`, `is_ambiguous`, `reviewer_confidence`, `reviewer_rationale`, `reviewer_comments` (all blank/null) | Ready |
-| [`reviewer_2_packet.jsonl`](file:///c:/Users/Admin/Documents/Hush/data/review/reviewer_2_packet.jsonl) | JSONL | 60 | Identical 60 scenarios in identical sequence as Reviewer 1. | Same 5 annotation fields (all blank/null) | Ready |
-| [`reviewer_1_form.csv`](file:///c:/Users/Admin/Documents/Hush/data/review/reviewer_1_form.csv) | CSV | 60 | Only transcript, domain context, and addressing signals shown. | Blank columns for action, ambiguity, confidence, rationale, comments | Ready |
-| [`reviewer_2_form.csv`](file:///c:/Users/Admin/Documents/Hush/data/review/reviewer_2_form.csv) | CSV | 60 | Identical 60 rows in identical order as Form 1. | Same blank columns | Ready |
-| [`review_guidelines.md`](file:///c:/Users/Admin/Documents/Hush/data/review/review_guidelines.md) | Markdown | — | Clear SPEAK, ASK, SILENT criteria and edge-case matrix. | Mandatory instruction to work independently without prior discussion | Ready |
-| [`disputes_v1.json`](file:///c:/Users/Admin/Documents/Hush/data/review/disputes_v1.json) | JSON | 0 disputes | Dedicated ledger for disagreements requiring adjudication. | Schema version 1.0.0; status: `pending_human_review` | Ready |
+| [`reviewer_1_packet.jsonl`](../data/review/reviewer_1_packet.jsonl) | JSONL | 60 | Zero gold labels, rationales, categories, or predictions. | `reviewer_action`, `is_ambiguous`, `reviewer_confidence`, `reviewer_rationale`, `reviewer_comments` (all blank/null) | Ready |
+| [`reviewer_2_packet.jsonl`](../data/review/reviewer_2_packet.jsonl) | JSONL | 60 | Identical 60 scenarios in identical sequence as Reviewer 1. | Same 5 annotation fields (all blank/null) | Ready |
+| [`reviewer_1_form.csv`](../data/review/reviewer_1_form.csv) | CSV | 60 | Only transcript, domain context, and addressing signals shown. | Blank columns for action, ambiguity, confidence, rationale, comments | Ready |
+| [`reviewer_2_form.csv`](../data/review/reviewer_2_form.csv) | CSV | 60 | Identical 60 rows in identical order as Form 1. | Same blank columns | Ready |
+| [`review_guidelines.md`](../data/review/review_guidelines.md) | Markdown | — | Clear SPEAK, ASK, SILENT criteria and edge-case matrix. | Mandatory instruction to work independently without prior discussion | Ready |
+| [`disputes_v1.json`](../data/review/disputes_v1.json) | JSON | 0 disputes | Dedicated ledger for disagreements requiring adjudication. | Schema version 1.0.0; status: `pending_human_review` | Ready |
 
 ### Review Guidelines & Rubric Alignment
-The guidelines in [`data/review/review_guidelines.md`](file:///c:/Users/Admin/Documents/Hush/data/review/review_guidelines.md) and [`docs/annotation_rubric_v2.md`](file:///c:/Users/Admin/Documents/Hush/docs/annotation_rubric_v2.md) unambiguously define:
+The guidelines in [`data/review/review_guidelines.md`](../data/review/review_guidelines.md) and [`docs/annotation_rubric_v2.md`](annotation_rubric_v2.md) unambiguously define:
 - `SPEAK`: When addressed with complete information or open group technical inquiry.
 - `ASK`: When addressed but underspecified, ambiguous, or missing crucial parameters.
 - `SILENT`: Human-to-human discussion, targeted human colleague questions, banter, emotional venting without direct request, already-answered inquiries, or false-positive name usage.
@@ -84,7 +84,7 @@ During in-depth inspection of the evaluation harness, feature pipeline, split fi
 
 ### Issue 3: In-Sample Calibration Parameter Selection (Now Corrected)
 - **Severity:** **MEDIUM**
-- **Evidence:** In [`scripts/analyze_calibration.py`](file:///c:/Users/Admin/Documents/Hush/scripts/analyze_calibration.py), temperature scaling parameter $T^*$ was optimized using the entire set of 180 out-of-fold logits, and then evaluated on those exact same 180 logits, reporting an in-sample ECE drop from $0.4076$ to $0.1104$ at $T=0.20$.
+- **Evidence:** In [`scripts/analyze_calibration.py`](../scripts/analyze_calibration.py), temperature scaling parameter $T^*$ was optimized using the entire set of 180 out-of-fold logits, and then evaluated on those exact same 180 logits, reporting an in-sample ECE drop from $0.4076$ to $0.1104$ at $T=0.20$.
 - **Impact:** Represented an empirical bound rather than a strictly validated out-of-sample calibration.
 - **Correction Made:** Added nested 5-fold cross-validation inside `scripts/analyze_calibration.py`. In each fold, $T$ is selected strictly on the remaining 4 training folds and evaluated on the held-out validation fold. All 5 inner folds converged to $T^* = 0.20$, verifying that true nested out-of-sample ECE is **0.1104** and nested NLL is **0.3773**. Both metrics are now explicitly saved in `data/results/phase4_calibration.json` with clear leakage-free labels.
 
@@ -100,17 +100,17 @@ During in-depth inspection of the evaluation harness, feature pipeline, split fi
 
 ### Code Improvements
 1. **Submission Ingestion & Mismatched Set Detection:**
-   Updated [`scripts/validate_review_manifest.py`](file:///c:/Users/Admin/Documents/Hush/scripts/validate_review_manifest.py):
+   Updated [`scripts/validate_review_manifest.py`](../scripts/validate_review_manifest.py):
    - Added verification that Reviewer 1 and Reviewer 2 evaluate identical scenario ID sets (`error_type: "mismatched_scenario_sets"`).
    - Added verification that submitted scenario sets match manifest scenario IDs (`error_type: "manifest_mismatch"`).
    - Added explicit detection of missing answers / blank action fields in submissions (`error_type: "missing_answers"`).
-   - Added automated dispute ledger output to [`data/review/disputes_v1.json`](file:///c:/Users/Admin/Documents/Hush/data/review/disputes_v1.json).
+   - Added automated dispute ledger output to [`data/review/disputes_v1.json`](../data/review/disputes_v1.json).
 2. **Nested Out-Of-Sample Temperature Scaling:**
-   Updated [`scripts/analyze_calibration.py`](file:///c:/Users/Admin/Documents/Hush/scripts/analyze_calibration.py) to perform nested 5-fold CV for temperature estimation, ensuring zero parameter leakage.
+   Updated [`scripts/analyze_calibration.py`](../scripts/analyze_calibration.py) to perform nested 5-fold CV for temperature estimation, ensuring zero parameter leakage.
 3. **Disputes Ledger Initialization:**
-   Created [`data/review/disputes_v1.json`](file:///c:/Users/Admin/Documents/Hush/data/review/disputes_v1.json) initialized with `pending_human_review` status.
+   Created [`data/review/disputes_v1.json`](../data/review/disputes_v1.json) initialized with `pending_human_review` status.
 
-### Regression Tests Added ([`backend/tests/test_phase6_review_execution.py`](file:///c:/Users/Admin/Documents/Hush/backend/tests/test_phase6_review_execution.py))
+### Regression Tests Added ([`backend/tests/test_phase6_review_execution.py`](../backend/tests/test_phase6_review_execution.py))
 - `test_dispute_ledger_file_writing`: Verifies disagreements between reviewers are properly formatted and written to the external JSON ledger.
 - `test_mismatched_scenario_sets_detection`: Verifies submissions with diverging scenario sets are rejected with `mismatched_scenario_sets`.
 - `test_missing_answers_detection`: Verifies CSV forms with empty/blank reviewer actions are identified and flagged with `missing_answers`.
@@ -120,9 +120,9 @@ During in-depth inspection of the evaluation harness, feature pipeline, split fi
 ## 6. Production Invariants Verification
 
 The production API was verified to adhere to all architectural constraints:
-- **Active Decider:** [`backend/app/services/decider.py`](file:///c:/Users/Admin/Documents/Hush/backend/app/services/decider.py#L130-L135) strictly loads `DevelopmentStubDecider` in local/offline mode.
+- **Active Decider:** [`backend/app/services/decider.py`](../backend/app/services/decider.py#L130-L135) strictly loads `DevelopmentStubDecider` in local/offline mode.
 - **Learned Classifier Isolation:** The logistic regression classifier is **not** imported or invoked in API routing.
-- **Silence Invariant:** In [`backend/app/routes/chat.py`](file:///c:/Users/Admin/Documents/Hush/backend/app/routes/chat.py#L133-L137):
+- **Silence Invariant:** In [`backend/app/routes/chat.py`](../backend/app/routes/chat.py#L133-L137):
   - When `action == Action.SILENT`, `reply = None` and `generation_used = False`.
   - Generator functions `generate_reply` and `generate_clarification` are **never** invoked.
 - **Contract & Legacy Compatibility:** Full backwards compatibility with legacy requests and responses is verified by passing tests in `test_legacy_compatibility.py` and `test_conversation_aware.py`.
@@ -161,7 +161,7 @@ $env:PYTHONPATH="backend"
    ```powershell
    python scripts/validate_review_manifest.py --r1 data/review/reviewer_1_form.csv --r2 data/review/reviewer_2_form.csv
    ```
-3. Check [`data/review/disputes_v1.json`](file:///c:/Users/Admin/Documents/Hush/data/review/disputes_v1.json) for any identified disagreements ($R_1 \ne R_2$).
+3. Check [`data/review/disputes_v1.json`](../data/review/disputes_v1.json) for any identified disagreements ($R_1 \ne R_2$).
 4. Have an arbitrator adjudicate disputed scenarios and record consensus gold actions in `review_manifest_v1.json`.
-5. Run [`scripts/summarize_review_status.py`](file:///c:/Users/Admin/Documents/Hush/scripts/summarize_review_status.py) to generate the finalized review status report.
+5. Run [`scripts/summarize_review_status.py`](../scripts/summarize_review_status.py) to generate the finalized review status report.
 6. Only after the quality gate passes ($\kappa \ge 0.75$ and 0 unresolved disputes) may the verified dataset be used for model benchmarking.

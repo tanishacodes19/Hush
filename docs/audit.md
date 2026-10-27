@@ -1,9 +1,11 @@
+> **Historical snapshot** of the prototype at commit `21d29df` (38 tests, before the classifier and hosted generation). Superseded by the README and later docs; kept for provenance.
+
 # Hush — Read-Only Repository Audit Report
 
 ## 1. Audit Baseline & Environment
 
 - **Audit Date and Time:** 2026-10-26T23:30:00+05:30 (18:00:00 UTC)
-- **Repository Root:** `C:\Users\Admin\Documents\Hush`
+- **Repository Root:** Workspace root
 - **Current Git Commit Hash:** `21d29df0bb9166b529efe615da1c4ea4c272f4bf`
 - **Current Git Branch:** `feature/backend-frontend`
 - **Initial Git Status (`git status --short`):**
@@ -13,14 +15,14 @@
   ```
   *(Pre-existing working tree modifications present before audit commencement. No changes were staged, committed, or discarded.)*
 - **Python Runtime:**
-  - System Python: `3.12.7 (tags/v3.12.7:0b05ead, Oct  1 2024, 03:06:41) [MSC v.1941 64 bit (AMD64)]` at `C:\Users\Admin\AppData\Local\Programs\Python\Python312\python.exe`
-  - Project Virtual Environment: Python `3.12.7` at `C:\Users\Admin\Documents\Hush\backend\.venv\Scripts\python.exe`
+  - System Python: 3.12.7 (tags/v3.12.7:0b05ead, Oct  1 2024, 03:06:41) [MSC v.1941 64 bit (AMD64)]
+  - Project Virtual Environment: Python 3.12.7 at `backend/.venv`
 - **Operating System and Platform:**
   - OS: `Microsoft Windows 10 IoT Enterprise LTSC` (Version `10.0.19044`, Build `19044`, 64-bit AMD64)
   - Shell: PowerShell 5.1 / 7.x
 - **Specification Status (`docs/PLAN.md` vs Root `PLAN.md`):**
   - Path `docs/PLAN.md`: **Does not exist** on disk (the `docs/` directory did not exist prior to this audit).
-  - Path `PLAN.md`: **Found and readable** at the repository root (`C:\Users\Admin\Documents\Hush\PLAN.md`, 590 lines). It contains the complete flagship project specification, including Section 1 (Overview & Addressing), Section 4 (Architecture), Section 7 (Decision Policy & Reliability), Section 9 (Backend API), and Section 10 (Scope and Roadmap / Phase 1).
+  - Path `PLAN.md`: **Found and readable** at the repository root (`PLAN.md`, 590 lines). It contains the complete flagship project specification, including Section 1 (Overview & Addressing), Section 4 (Architecture), Section 7 (Decision Policy & Reliability), Section 9 (Backend API), and Section 10 (Scope and Roadmap / Phase 1).
 
 ---
 
@@ -30,9 +32,9 @@ Hush is envisioned as a conversational restraint engine for multi-person group c
 
 A prototype backend is implemented in `backend/` using FastAPI and Pydantic v2, supported by a React/TypeScript demo frontend in `frontend/`. The existing backend represents a clean, working vertical slice of the restraint workflow:
 1. **Core Invariant Verified:** When a decision evaluates to `SILENT`, text generation is completely bypassed. This behavior is enforced at three levels:
-   - Route-level branch logic in [chat.py](file:///c:/Users/Admin/Documents/Hush/backend/app/routes/chat.py#L87-L91).
-   - Schema-level validator in [schemas.py](file:///c:/Users/Admin/Documents/Hush/backend/app/schemas.py#L57-L65).
-   - Automated test assertions with mocks in [test_api.py](file:///c:/Users/Admin/Documents/Hush/backend/tests/test_api.py#L111-L136) and [test_metrics.py](file:///c:/Users/Admin/Documents/Hush/backend/tests/test_metrics.py#L75-L91).
+   - Route-level branch logic in [chat.py](../backend/app/routes/chat.py#L87-L91).
+   - Schema-level validator in [schemas.py](../backend/app/schemas.py#L57-L65).
+   - Automated test assertions with mocks in [test_api.py](../backend/tests/test_api.py#L111-L136) and [test_metrics.py](../backend/tests/test_metrics.py#L75-L91).
 2. **Current Test Suite:** 38 unit and integration tests execute cleanly in 2.03 seconds with zero failures, zero errors, and zero network/cloud side effects.
 3. **Primary Architecture Gaps:**
    - **Addressing and Metadata:** The prototype uses a simplified single-speaker request schema (`conversation_id`, `user_id`, `message`). It lacks speaker roles, message IDs, `mentions`, `reply_to`, and the planned two-tier addressing engine (metadata first, keyword fallback second).
@@ -53,15 +55,15 @@ The following table benchmarks the existing repository implementation against th
 
 | Requirement / Component | Status | Code Evidence (File & Line Numbers) | Recommended Action |
 |---|---|---|---|
-| **Speaker Identity & Message IDs** | Partially implemented | [schemas.py:18-33](file:///c:/Users/Admin/Documents/Hush/backend/app/schemas.py#L18-L33), [conversation.py:15-22](file:///c:/Users/Admin/Documents/Hush/backend/app/services/conversation.py#L15-L22) | Keep `user_id` mapped via adapter; extend message model to include `message_id`, `speaker_id`, `display_name`, `role`, and `ts`. |
-| **Mentions & Reply Targets** | Missing | [schemas.py:26-33](file:///c:/Users/Admin/Documents/Hush/backend/app/schemas.py#L26-L33) (only `user_id` and `message` present) | Add `mentions: list[str]` and `reply_to: Optional[str]` to the conversation-aware schema. |
-| **Two-Tier Addressing Engine** | Missing | [decider.py:38-46](file:///c:/Users/Admin/Documents/Hush/backend/app/services/decider.py#L38-L46) (only naive text substring match `"hush" in text`) | Implement Tier 1 (mentions / reply-to-Hush check) and Tier 2 (standalone name token / role request fallback); emit `address_method`. |
-| **`confidence_kind` & Honest Confidence** | Missing | [schemas.py:35-43, 45-56](file:///c:/Users/Admin/Documents/Hush/backend/app/schemas.py#L35-L43) (has only `confidence: Optional[float]`) | Add `confidence_kind: Literal["calibrated_probability", "uncalibrated_score", "none"]` to `DecisionResult` and response schema. |
-| **Swappable Decider Interface** | Implemented | [decider.py:13-16, 95-100](file:///c:/Users/Admin/Documents/Hush/backend/app/services/decider.py#L13-L16) (`DeciderAdapter` protocol, `get_decider` factory) | Keep protocol and factory structure; generalize context argument to support rich message history. |
-| **SPEAK / ASK / SILENT Routing** | Implemented | [chat.py:50-91](file:///c:/Users/Admin/Documents/Hush/backend/app/routes/chat.py#L50-L91), [schemas.py:57-65](file:///c:/Users/Admin/Documents/Hush/backend/app/schemas.py#L57-L65) | Keep existing branch structure and Pydantic validator enforcing zero generation on SILENT. |
-| **Bounded Conversation History** | Implemented | [conversation.py:8-41](file:///c:/Users/Admin/Documents/Hush/backend/app/services/conversation.py#L8-L41) (`max_history = 20`) | Keep sliding window logic; add client history seed support and thread lock safety. |
-| **Legacy API Compatibility** | Partially implemented | [chat.py:16-27](file:///c:/Users/Admin/Documents/Hush/backend/app/routes/chat.py#L16-L27), [schemas.py:26-33](file:///c:/Users/Admin/Documents/Hush/backend/app/schemas.py#L26-L33) | Current endpoint serves legacy shape directly. Add request adapter so new conversation-aware payloads work seamlessly without breaking legacy clients. |
-| **Telemetry & Metrics** | Partially implemented | [metrics.py:20-137](file:///c:/Users/Admin/Documents/Hush/backend/app/services/metrics.py#L20-L137), [routes/metrics.py:10-31](file:///c:/Users/Admin/Documents/Hush/backend/app/routes/metrics.py#L10-L31) | Keep counters and latency summaries; add `address_method` breakdown counter and low-confidence action policy. |
+| **Speaker Identity & Message IDs** | Partially implemented | [schemas.py:18-33](../backend/app/schemas.py#L18-L33), [conversation.py:15-22](../backend/app/services/conversation.py#L15-L22) | Keep `user_id` mapped via adapter; extend message model to include `message_id`, `speaker_id`, `display_name`, `role`, and `ts`. |
+| **Mentions & Reply Targets** | Missing | [schemas.py:26-33](../backend/app/schemas.py#L26-L33) (only `user_id` and `message` present) | Add `mentions: list[str]` and `reply_to: Optional[str]` to the conversation-aware schema. |
+| **Two-Tier Addressing Engine** | Missing | [decider.py:38-46](../backend/app/services/decider.py#L38-L46) (only naive text substring match `"hush" in text`) | Implement Tier 1 (mentions / reply-to-Hush check) and Tier 2 (standalone name token / role request fallback); emit `address_method`. |
+| **`confidence_kind` & Honest Confidence** | Missing | [schemas.py:35-43, 45-56](../backend/app/schemas.py#L35-L43) (has only `confidence: Optional[float]`) | Add `confidence_kind: Literal["calibrated_probability", "uncalibrated_score", "none"]` to `DecisionResult` and response schema. |
+| **Swappable Decider Interface** | Implemented | [decider.py:13-16, 95-100](../backend/app/services/decider.py#L13-L16) (`DeciderAdapter` protocol, `get_decider` factory) | Keep protocol and factory structure; generalize context argument to support rich message history. |
+| **SPEAK / ASK / SILENT Routing** | Implemented | [chat.py:50-91](../backend/app/routes/chat.py#L50-L91), [schemas.py:57-65](../backend/app/schemas.py#L57-L65) | Keep existing branch structure and Pydantic validator enforcing zero generation on SILENT. |
+| **Bounded Conversation History** | Implemented | [conversation.py:8-41](../backend/app/services/conversation.py#L8-L41) (`max_history = 20`) | Keep sliding window logic; add client history seed support and thread lock safety. |
+| **Legacy API Compatibility** | Partially implemented | [chat.py:16-27](../backend/app/routes/chat.py#L16-L27), [schemas.py:26-33](../backend/app/schemas.py#L26-L33) | Current endpoint serves legacy shape directly. Add request adapter so new conversation-aware payloads work seamlessly without breaking legacy clients. |
+| **Telemetry & Metrics** | Partially implemented | [metrics.py:20-137](../backend/app/services/metrics.py#L20-L137), [routes/metrics.py:10-31](../backend/app/routes/metrics.py#L10-L31) | Keep counters and latency summaries; add `address_method` breakdown counter and low-confidence action policy. |
 | **Structured Logging without Message Leakage** | Missing | Entire `backend/app/` has no Python logger or structlog invocations | Introduce standard structured logging that logs action, method, latency, and fallbacks without printing message text. |
 | **Dataset & Evaluation Suite (`ml/`)** | Missing | Repository root contains no `ml/` directory | Create `ml/` package with `LABELING_GUIDELINE.md`, `scenarios.jsonl`, baseline runners, and bootstrap evaluation script. |
 | **CI Workflow Automation** | Missing | `.github/workflows/` directory does not exist | Add GitHub Actions workflow for pytest and ruff formatting/linting. |
@@ -181,14 +183,14 @@ Hush/
 
 ### Module Responsibilities
 
-- **API Entrypoint & Middleware:** [main.py](file:///c:/Users/Admin/Documents/Hush/backend/app/main.py#L9-L47) initializes the FastAPI application, mounts CORS middleware, adds custom telemetry response headers (`X-Hush-Decider-Mode`, `X-Hush-Generation-Mode`), and exposes `GET /health`.
-- **Configuration Management:** [config.py](file:///c:/Users/Admin/Documents/Hush/backend/app/config.py#L7-L37) loads environment variables using Pydantic Settings (`.env` file support, non-blocking defaults, AWS parameter placeholders).
-- **Domain Schemas & Validation:** [schemas.py](file:///c:/Users/Admin/Documents/Hush/backend/app/schemas.py#L11-L111) defines strongly-typed data structures with Pydantic v2 (`extra="forbid"`), enforcing the invariant that `SILENT` actions must have `reply = None` and `generation_used = False`.
-- **Chat Routing & Pipeline Orchestration:** [chat.py](file:///c:/Users/Admin/Documents/Hush/backend/app/routes/chat.py#L16-L100) coordinates state updates, decider evaluations, telemetry recording, and conditional generation invocation.
-- **Telemetry & Observability:** [metrics.py](file:///c:/Users/Admin/Documents/Hush/backend/app/services/metrics.py#L20-L137) provides thread-safe counters, latency summaries, and a reset boundary, surfaced via [routes/metrics.py](file:///c:/Users/Admin/Documents/Hush/backend/app/routes/metrics.py#L10-L31).
-- **Decision Engine Interface:** [decider.py](file:///c:/Users/Admin/Documents/Hush/backend/app/services/decider.py#L13-L100) provides a `DeciderAdapter` protocol, a deterministic local development stub, and a fail-fast adapter for `hush_gate`.
-- **Text Generation Engine:** [generation.py](file:///c:/Users/Admin/Documents/Hush/backend/app/services/generation.py#L12-L46) defines the `GenerationService` protocol and development stub, delegating to [bedrock.py](file:///c:/Users/Admin/Documents/Hush/backend/app/services/bedrock.py#L26-L160) for AWS Bedrock Converse API operations.
-- **State Management:** [conversation.py](file:///c:/Users/Admin/Documents/Hush/backend/app/services/conversation.py#L8-L41) provides an ephemeral in-memory sliding window history buffer per room.
+- **API Entrypoint & Middleware:** [main.py](../backend/app/main.py#L9-L47) initializes the FastAPI application, mounts CORS middleware, adds custom telemetry response headers (`X-Hush-Decider-Mode`, `X-Hush-Generation-Mode`), and exposes `GET /health`.
+- **Configuration Management:** [config.py](../backend/app/config.py#L7-L37) loads environment variables using Pydantic Settings (`.env` file support, non-blocking defaults, AWS parameter placeholders).
+- **Domain Schemas & Validation:** [schemas.py](../backend/app/schemas.py#L11-L111) defines strongly-typed data structures with Pydantic v2 (`extra="forbid"`), enforcing the invariant that `SILENT` actions must have `reply = None` and `generation_used = False`.
+- **Chat Routing & Pipeline Orchestration:** [chat.py](../backend/app/routes/chat.py#L16-L100) coordinates state updates, decider evaluations, telemetry recording, and conditional generation invocation.
+- **Telemetry & Observability:** [metrics.py](../backend/app/services/metrics.py#L20-L137) provides thread-safe counters, latency summaries, and a reset boundary, surfaced via [routes/metrics.py](../backend/app/routes/metrics.py#L10-L31).
+- **Decision Engine Interface:** [decider.py](../backend/app/services/decider.py#L13-L100) provides a `DeciderAdapter` protocol, a deterministic local development stub, and a fail-fast adapter for `hush_gate`.
+- **Text Generation Engine:** [generation.py](../backend/app/services/generation.py#L12-L46) defines the `GenerationService` protocol and development stub, delegating to [bedrock.py](../backend/app/services/bedrock.py#L26-L160) for AWS Bedrock Converse API operations.
+- **State Management:** [conversation.py](../backend/app/services/conversation.py#L8-L41) provides an ephemeral in-memory sliding window history buffer per room.
 
 ---
 
@@ -197,7 +199,7 @@ Hush/
 ### Endpoint Inventory
 
 #### 1. `GET /health`
-- **Implementation:** [main.py:38-47](file:///c:/Users/Admin/Documents/Hush/backend/app/main.py#L38-L47)
+- **Implementation:** [main.py:38-47](../backend/app/main.py#L38-L47)
 - **Method:** `GET`
 - **Request Body:** None
 - **Response Schema:**
@@ -214,9 +216,9 @@ Hush/
 - **Error Statuses:** None.
 
 #### 2. `POST /api/chat/message`
-- **Implementation:** [chat.py:16-100](file:///c:/Users/Admin/Documents/Hush/backend/app/routes/chat.py#L16-L100)
+- **Implementation:** [chat.py:16-100](../backend/app/routes/chat.py#L16-L100)
 - **Method:** `POST`
-- **Request Schema (`ChatMessageRequest`):** [schemas.py:26-33](file:///c:/Users/Admin/Documents/Hush/backend/app/schemas.py#L26-L33)
+- **Request Schema (`ChatMessageRequest`):** [schemas.py:26-33](../backend/app/schemas.py#L26-L33)
   ```json
   {
     "conversation_id": "room-1",
@@ -229,7 +231,7 @@ Hush/
   - `user_id`: string, minimum length 1, required.
   - `message`: string, minimum length 1, required.
   - `extra="forbid"`: rejects any undeclared payload fields.
-- **Response Schema (`ChatMessageResponse`):** [schemas.py:45-66](file:///c:/Users/Admin/Documents/Hush/backend/app/schemas.py#L45-L66)
+- **Response Schema (`ChatMessageResponse`):** [schemas.py:45-66](../backend/app/schemas.py#L45-L66)
   ```json
   {
     "conversation_id": "room-1",
@@ -244,18 +246,18 @@ Hush/
 - **Validation & Response Invariant:**
   - `action`: enum `["SPEAK", "SILENT", "ASK"]`.
   - `confidence`: float between `0.0` and `1.0`, or `null`.
-  - When `action == "SILENT"`: `reply` MUST be `null`, and `generation_used` MUST be `false` (validated by `validate_silent_contract` in [schemas.py:57-65](file:///c:/Users/Admin/Documents/Hush/backend/app/schemas.py#L57-L65)).
+  - When `action == "SILENT"`: `reply` MUST be `null`, and `generation_used` MUST be `false` (validated by `validate_silent_contract` in [schemas.py:57-65](../backend/app/schemas.py#L57-L65)).
 - **Observed Error Responses:**
   - `422 Unprocessable Entity`: Triggered on empty string fields, missing fields, or extra payload fields.
-  - `500 Internal Server Error`: Raised if Bedrock generation mode is active but AWS configuration (`AWS_REGION` or `BEDROCK_MODEL_ID`) is missing ([chat.py:74-79](file:///c:/Users/Admin/Documents/Hush/backend/app/routes/chat.py#L74-L79)).
-  - `502 Bad Gateway`: Raised if AWS Bedrock Converse API invocation fails or throttles ([chat.py:80-85](file:///c:/Users/Admin/Documents/Hush/backend/app/routes/chat.py#L80-L85)).
-  - `503 Service Unavailable`: Raised if real decider mode is active (`HUSH_DECIDER_MODE=real`) but the teammate `hush_gate` library is not installed or available ([chat.py:36-40](file:///c:/Users/Admin/Documents/Hush/backend/app/routes/chat.py#L36-L40)).
+  - `500 Internal Server Error`: Raised if Bedrock generation mode is active but AWS configuration (`AWS_REGION` or `BEDROCK_MODEL_ID`) is missing ([chat.py:74-79](../backend/app/routes/chat.py#L74-L79)).
+  - `502 Bad Gateway`: Raised if AWS Bedrock Converse API invocation fails or throttles ([chat.py:80-85](../backend/app/routes/chat.py#L80-L85)).
+  - `503 Service Unavailable`: Raised if real decider mode is active (`HUSH_DECIDER_MODE=real`) but the teammate `hush_gate` library is not installed or available ([chat.py:36-40](../backend/app/routes/chat.py#L36-L40)).
 
 #### 3. `GET /api/metrics`
-- **Implementation:** [routes/metrics.py:10-18](file:///c:/Users/Admin/Documents/Hush/backend/app/routes/metrics.py#L10-L18)
+- **Implementation:** [routes/metrics.py:10-18](../backend/app/routes/metrics.py#L10-L18)
 - **Method:** `GET`
 - **Request Body:** None
-- **Response Schema (`MetricsResponse`):** [schemas.py:87-104](file:///c:/Users/Admin/Documents/Hush/backend/app/schemas.py#L87-L104)
+- **Response Schema (`MetricsResponse`):** [schemas.py:87-104](../backend/app/schemas.py#L87-L104)
   ```json
   {
     "messages_evaluated": 0,
@@ -290,10 +292,10 @@ Hush/
 - **Error Statuses:** None.
 
 #### 4. `POST /api/metrics/reset`
-- **Implementation:** [routes/metrics.py:20-31](file:///c:/Users/Admin/Documents/Hush/backend/app/routes/metrics.py#L20-L31)
+- **Implementation:** [routes/metrics.py:20-31](../backend/app/routes/metrics.py#L20-L31)
 - **Method:** `POST`
 - **Request Body:** None
-- **Response Schema (`ResetMetricsResponse`):** [schemas.py:106-111](file:///c:/Users/Admin/Documents/Hush/backend/app/schemas.py#L106-L111)
+- **Response Schema (`ResetMetricsResponse`):** [schemas.py:106-111](../backend/app/schemas.py#L106-L111)
   ```json
   {
     "status": "ok",
@@ -350,26 +352,26 @@ sequenceDiagram
 
 **No. SILENT cannot and does not call the generation service.**
 - **Static Code Evidence:**
-  1. In [chat.py:55-86](file:///c:/Users/Admin/Documents/Hush/backend/app/routes/chat.py#L55-L86), generator calls are strictly enclosed inside the block `if decision.action in (Action.SPEAK, Action.ASK):`.
-  2. In [chat.py:87-90](file:///c:/Users/Admin/Documents/Hush/backend/app/routes/chat.py#L87-L90), the `Action.SILENT` branch explicitly enforces:
+  1. In [chat.py:55-86](../backend/app/routes/chat.py#L55-L86), generator calls are strictly enclosed inside the block `if decision.action in (Action.SPEAK, Action.ASK):`.
+  2. In [chat.py:87-90](../backend/app/routes/chat.py#L87-L90), the `Action.SILENT` branch explicitly enforces:
      ```python
      elif decision.action == Action.SILENT:
          # INVARIANT: When SILENT, reply is strictly None and generation is never called.
          reply = None
          generation_used = False
      ```
-  3. In [schemas.py:57-65](file:///c:/Users/Admin/Documents/Hush/backend/app/schemas.py#L57-L65), the `ChatMessageResponse` model validator raises a `ValueError` if `action == Action.SILENT` and either `generation_used` is `True` or `reply` is not `None`.
+  3. In [schemas.py:57-65](../backend/app/schemas.py#L57-L65), the `ChatMessageResponse` model validator raises a `ValueError` if `action == Action.SILENT` and either `generation_used` is `True` or `reply` is not `None`.
 - **Test Evidence (Observed):**
-  1. [test_api.py:111-136](file:///c:/Users/Admin/Documents/Hush/backend/tests/test_api.py#L111-L136) (`test_critical_silent_makes_zero_generation_calls`) patches `get_generator` with a `MagicMock()` and asserts `mock_gen.generate_reply.call_count == 0` and `mock_gen.generate_clarification.call_count == 0`. This test executed and **PASSED**.
-  2. [test_api.py:182-205](file:///c:/Users/Admin/Documents/Hush/backend/tests/test_api.py#L182-L205) (`test_bedrock_mode_silent_strictly_never_calls_bedrock`) patches Bedrock mode with a `MagicMock()` and confirms zero calls. This test executed and **PASSED**.
-  3. [test_metrics.py:75-91](file:///c:/Users/Admin/Documents/Hush/backend/tests/test_metrics.py#L75-L91) confirms that on a `SILENT` decision, `generation_calls_attempted` remains unchanged and `generation_calls_avoided` increments by 1. This test executed and **PASSED**.
+  1. [test_api.py:111-136](../backend/tests/test_api.py#L111-L136) (`test_critical_silent_makes_zero_generation_calls`) patches `get_generator` with a `MagicMock()` and asserts `mock_gen.generate_reply.call_count == 0` and `mock_gen.generate_clarification.call_count == 0`. This test executed and **PASSED**.
+  2. [test_api.py:182-205](../backend/tests/test_api.py#L182-L205) (`test_bedrock_mode_silent_strictly_never_calls_bedrock`) patches Bedrock mode with a `MagicMock()` and confirms zero calls. This test executed and **PASSED**.
+  3. [test_metrics.py:75-91](../backend/tests/test_metrics.py#L75-L91) confirms that on a `SILENT` decision, `generation_calls_attempted` remains unchanged and `generation_calls_avoided` increments by 1. This test executed and **PASSED**.
 
 ### Conversation History Representation and Boundaries
 
-- **Representation:** History is stored as a list of `Message` instances (`speaker: str`, `text: str`) in [schemas.py:18-24](file:///c:/Users/Admin/Documents/Hush/backend/app/schemas.py#L18-L24).
-- **Storage:** In-memory dictionary `defaultdict(list)` indexed by `conversation_id` in [conversation.py:8-41](file:///c:/Users/Admin/Documents/Hush/backend/app/services/conversation.py#L8-L41).
-- **Bounding:** The sliding window is capped at `max_history = 20`. When the message count exceeds `max_history`, older messages are pruned: `history[-self.max_history:]` ([conversation.py:20-21](file:///c:/Users/Admin/Documents/Hush/backend/app/services/conversation.py#L20-L21)).
-- **Reset Boundary:** History can be cleared per conversation via `clear(conversation_id)` or globally via `clear_all()` ([conversation.py:31-39](file:///c:/Users/Admin/Documents/Hush/backend/app/services/conversation.py#L31-L39)).
+- **Representation:** History is stored as a list of `Message` instances (`speaker: str`, `text: str`) in [schemas.py:18-24](../backend/app/schemas.py#L18-L24).
+- **Storage:** In-memory dictionary `defaultdict(list)` indexed by `conversation_id` in [conversation.py:8-41](../backend/app/services/conversation.py#L8-L41).
+- **Bounding:** The sliding window is capped at `max_history = 20`. When the message count exceeds `max_history`, older messages are pruned: `history[-self.max_history:]` ([conversation.py:20-21](../backend/app/services/conversation.py#L20-L21)).
+- **Reset Boundary:** History can be cleared per conversation via `clear(conversation_id)` or globally via `clear_all()` ([conversation.py:31-39](../backend/app/services/conversation.py#L31-L39)).
 - **Limitations & Isolation Risks:**
   - *Process Ephemerality:* Data resides purely in RAM and is lost upon process restart.
   - *Unbounded Memory Growth:* The dictionary creates entries for every unique `conversation_id` with no TTL or eviction policy, creating a memory leak risk under high traffic with distinct room IDs.
@@ -382,7 +384,7 @@ sequenceDiagram
 
 ### Metrics Telemetry
 
-- **Endpoints:** `GET /api/metrics` and `POST /api/metrics/reset` ([routes/metrics.py:10-31](file:///c:/Users/Admin/Documents/Hush/backend/app/routes/metrics.py#L10-L31)).
+- **Endpoints:** `GET /api/metrics` and `POST /api/metrics/reset` ([routes/metrics.py:10-31](../backend/app/routes/metrics.py#L10-L31)).
 - **Metrics Collected:**
   - `messages_evaluated`: Total chat evaluations.
   - `decisions`: Mutually exclusive counts for `SPEAK`, `SILENT`, `ASK`.
@@ -402,25 +404,25 @@ sequenceDiagram
 ### Error Handling & Fallbacks
 
 - **Decider Unavailable:**
-  - If `HUSH_DECIDER_MODE="real"` and `hush_gate` cannot be imported, [decider.py:74-81](file:///c:/Users/Admin/Documents/Hush/backend/app/services/decider.py#L74-L81) raises `RuntimeError`, which [chat.py:36-40](file:///c:/Users/Admin/Documents/Hush/backend/app/routes/chat.py#L36-L40) converts into an HTTP `503 Service Unavailable`.
+  - If `HUSH_DECIDER_MODE="real"` and `hush_gate` cannot be imported, [decider.py:74-81](../backend/app/services/decider.py#L74-L81) raises `RuntimeError`, which [chat.py:36-40](../backend/app/routes/chat.py#L36-L40) converts into an HTTP `503 Service Unavailable`.
   - In `stub` mode, fallback heuristics never raise exceptions.
 - **Bedrock Failures:**
-  - Missing credentials/region/model ID raises `BedrockConfigError` -> HTTP `500 Internal Server Error` ([chat.py:74-79](file:///c:/Users/Admin/Documents/Hush/backend/app/routes/chat.py#L74-L79)).
-  - Boto3 ClientError, throttling, or network timeout raises `BedrockServiceError` -> HTTP `502 Bad Gateway` ([chat.py:80-85](file:///c:/Users/Admin/Documents/Hush/backend/app/routes/chat.py#L80-L85)).
-  - When generation fails, `metrics_tracker.record_generation_failure()` increments `generation_calls_failed` ([test_metrics.py:149-168](file:///c:/Users/Admin/Documents/Hush/backend/tests/test_metrics.py#L149-L168)).
+  - Missing credentials/region/model ID raises `BedrockConfigError` -> HTTP `500 Internal Server Error` ([chat.py:74-79](../backend/app/routes/chat.py#L74-L79)).
+  - Boto3 ClientError, throttling, or network timeout raises `BedrockServiceError` -> HTTP `502 Bad Gateway` ([chat.py:80-85](../backend/app/routes/chat.py#L80-L85)).
+  - When generation fails, `metrics_tracker.record_generation_failure()` increments `generation_calls_failed` ([test_metrics.py:149-168](../backend/tests/test_metrics.py#L149-L168)).
 - **Low Confidence & Fallback Safeguards:**
   - `PLAN.md` Section 7 specifies: *low confidence -> SILENT unless addressed; addressed + low confidence -> ASK; service failure -> SILENT unless addressed, logged*.
-  - **Finding:** This policy is **missing** from the current prototype. The backend records `low_confidence_decisions` in metrics ([metrics.py:68-69](file:///c:/Users/Admin/Documents/Hush/backend/app/services/metrics.py#L68-L69)), but does not modify the decider's action routing.
+  - **Finding:** This policy is **missing** from the current prototype. The backend records `low_confidence_decisions` in metrics ([metrics.py:68-69](../backend/app/services/metrics.py#L68-L69)), but does not modify the decider's action routing.
 
 ---
 
 ## 9. Secret-Handling Review
 
 - **Configuration & Environment Variables:**
-  - In [config.py:7-13](file:///c:/Users/Admin/Documents/Hush/backend/app/config.py#L7-L13), `Settings` uses Pydantic's `SettingsConfigDict` reading from `.env`.
-  - Secrets are never hardcoded. AWS parameters default to `None` ([config.py:26-28](file:///c:/Users/Admin/Documents/Hush/backend/app/config.py#L26-L28)).
+  - In [config.py:7-13](../backend/app/config.py#L7-L13), `Settings` uses Pydantic's `SettingsConfigDict` reading from `.env`.
+  - Secrets are never hardcoded. AWS parameters default to `None` ([config.py:26-28](../backend/app/config.py#L26-L28)).
 - **Git Ignore Safeguards:**
-  - Root [.gitignore:36-40](file:///c:/Users/Admin/Documents/Hush/.gitignore#L36-L40) explicitly ignores `.env` and `.env*.local`, while keeping `!.env.example` tracked.
+  - Root [.gitignore:36-40](../.gitignore#L36-L40) explicitly ignores `.env` and `.env*.local`, while keeping `!.env.example` tracked.
 - **Tracked Files & Examples:**
   - `backend/.env.example` contains only empty placeholder keys (`AWS_REGION=`, `BEDROCK_MODEL_ID=`, `AWS_ACCESS_KEY_ID=`, etc.).
   - A full repository search confirms that no `.env` file exists on disk, and no credentials or secret keys are present in tracked files or Git history.
@@ -450,8 +452,8 @@ No tests make external network calls, invoke real LLM/AWS APIs, read private `.e
 - **Observed Test Run Output:**
   ```text
   ============================= test session starts =============================
-  platform win32 -- Python 3.12.7, pytest-9.1.1, pluggy-1.7.0 -- C:\Users\Admin\Documents\Hush\backend\.venv\Scripts\python.exe
-  rootdir: C:\Users\Admin\Documents\Hush
+  platform win32 -- Python 3.12.7, pytest-9.1.1, pluggy-1.7.0 -- backend\.venv\Scripts\python.exe
+  rootdir: Workspace root
   plugins: anyio-4.15.1, asyncio-1.4.0, cov-7.1.0
   asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
   collecting ... collected 38 items

@@ -1,7 +1,7 @@
 # Hush — Phase 4: Error Analysis, Confidence Calibration & Decision Trade-offs Report
 
 **Date:** October 27, 2026  
-**Status:** **Provisional Research Results** (Labels unverified by independent human review; see [`docs/dataset_provenance_audit.md`](file:///c:/Users/Admin/Documents/Hush/docs/dataset_provenance_audit.md))  
+**Status:** **Provisional Research Results** (Labels unverified by independent human review; see [`docs/dataset_provenance_audit.md`](dataset_provenance_audit.md))  
 **Evaluation Scope:** 5-Fold Out-Of-Fold (OOF) Cross-Validation on Development Split (`data/splits/dev.jsonl`, $N=180$, Seed 42).  
 **Test Set Discipline:** Held-out test split (`data/splits/test.jsonl`) was **not accessed** during this analysis.
 
@@ -25,7 +25,7 @@
 
 ## 2. Metric Audit & Definitional Distinctions
 
-Before running diagnostics, the full metric calculation suite in [`backend/app/services/evaluation.py`](file:///c:/Users/Admin/Documents/Hush/backend/app/services/evaluation.py) was audited against [`docs/dataset_spec.md`](file:///c:/Users/Admin/Documents/Hush/docs/dataset_spec.md):
+Before running diagnostics, the full metric calculation suite in [`backend/app/services/evaluation.py`](../backend/app/services/evaluation.py) was audited against [`docs/dataset_spec.md`](dataset_spec.md):
 
 1. **Accuracy & Macro-F1:**
    $$\text{Accuracy} = \frac{\sum_{i=1}^N \mathbb{I}(\hat{y}_i = y_i)}{N}, \quad \text{Macro-F1} = \frac{1}{3} \sum_{c \in \{\text{SILENT, SPEAK, ASK}\}} F1_c$$
@@ -143,14 +143,14 @@ Reliability Diagram Data (10 bins, Out-Of-Fold N=180):
 ## 7. Artifacts Created & Generated
 
 - Diagnostic Scripts:
-  - [`scripts/analyze_errors.py`](file:///c:/Users/Admin/Documents/Hush/scripts/analyze_errors.py)
-  - [`scripts/analyze_calibration.py`](file:///c:/Users/Admin/Documents/Hush/scripts/analyze_calibration.py)
-  - [`scripts/analyze_thresholds.py`](file:///c:/Users/Admin/Documents/Hush/scripts/analyze_thresholds.py)
+  - [`scripts/analyze_errors.py`](../scripts/analyze_errors.py)
+  - [`scripts/analyze_calibration.py`](../scripts/analyze_calibration.py)
+  - [`scripts/analyze_thresholds.py`](../scripts/analyze_thresholds.py)
 - Diagnostic Data Artifacts:
   - `data/results/phase4_dev_error_analysis.json`
   - `data/results/phase4_calibration.json`
   - `data/results/phase4_threshold_sweep.json`
 - Analytical Documentation:
-  - [`docs/phase4_analysis.md`](file:///c:/Users/Admin/Documents/Hush/docs/phase4_analysis.md)
+  - [`docs/phase4_analysis.md`](phase4_analysis.md)
 - Test Suite:
-  - [`backend/tests/test_phase4_analysis.py`](file:///c:/Users/Admin/Documents/Hush/backend/tests/test_phase4_analysis.py)
+  - [`backend/tests/test_phase4_analysis.py`](../backend/tests/test_phase4_analysis.py)

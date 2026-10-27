@@ -44,7 +44,7 @@ This phase audited all historical evaluation calculations, established an indepe
 
 ## 3. Independent Annotation Review Workflow
 
-To resolve the label-provenance gap, an operational human review package was constructed in [`data/review/`](file:///c:/Users/Admin/Documents/Hush/data/review):
+To resolve the label-provenance gap, an operational human review package was constructed in [`data/review/`](../data/review):
 
 ```text
 data/review/
@@ -61,7 +61,7 @@ Sampled from `data/dataset_v1.jsonl` using fixed seed 42:
 - **Category Coverage:** Spans all 12 defined scenario categories (~5 per category)
 
 ### 3.2 Automated Manifest Validation Tooling
-Implemented in [`scripts/validate_review_manifest.py`](file:///c:/Users/Admin/Documents/Hush/scripts/validate_review_manifest.py):
+Implemented in [`scripts/validate_review_manifest.py`](../scripts/validate_review_manifest.py):
 - Validates review completeness.
 - Computes observed agreement ($p_o$), expected chance agreement ($p_e$), and Cohen's Kappa ($\kappa$).
 - Generates 3x3 inter-annotator confusion matrix.
@@ -74,9 +74,9 @@ Implemented in [`scripts/validate_review_manifest.py`](file:///c:/Users/Admin/Do
 
 The historical 120-scenario test split was evaluated in Phase 2. To avoid post-hoc tuning leakage, it is permanently sealed.
 
-[`scripts/prepare_fresh_holdout.py`](file:///c:/Users/Admin/Documents/Hush/scripts/prepare_fresh_holdout.py) establishes the quarantine boundary and collection tooling for a brand-new 50-scenario holdout set:
+[`scripts/prepare_fresh_holdout.py`](../scripts/prepare_fresh_holdout.py) establishes the quarantine boundary and collection tooling for a brand-new 50-scenario holdout set:
 
-### 4.1 Specification & Criteria ([`data/holdout/holdout_spec.md`](file:///c:/Users/Admin/Documents/Hush/data/holdout/holdout_spec.md))
+### 4.1 Specification & Criteria ([`data/holdout/holdout_spec.md`](../data/holdout/holdout_spec.md))
 - **Target Size:** 50 multi-turn scenarios (23 SILENT [46%], 17 SPEAK [34%], 10 ASK [20%]).
 - **Leakage Prevention Filter:** Tokenizes candidate messages and computes Jaccard word similarity against all 300 existing master scenarios. Any candidate with Jaccard similarity $\ge 0.70$ is automatically rejected.
 - **Quarantine Location:** `data/holdout/holdout_v1.jsonl` (locked against model training scripts).

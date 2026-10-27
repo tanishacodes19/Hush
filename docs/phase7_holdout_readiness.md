@@ -3,7 +3,7 @@
 **Status:** Tooling and Quarantine Ready; Candidate Collection Pending  
 **Date:** October 2026  
 **Auditor / Engineer:** Antigravity AI Assistant  
-**Repository:** `c:\Users\Admin\Documents\Hush`
+**Repository:** Workspace root
 
 ---
 
@@ -29,7 +29,7 @@ To obtain an uncompromised final evaluation of Hush's Conversational Restraint E
 
 ## 2. Multi-Level Overlap Verification Tooling
 
-The verification engine in [`scripts/prepare_fresh_holdout.py`](file:///c:/Users/Admin/Documents/Hush/scripts/prepare_fresh_holdout.py) implements three complementary layers of similarity screening against all 300 existing scenarios in `data/dataset_v1.jsonl`:
+The verification engine in [`scripts/prepare_fresh_holdout.py`](../scripts/prepare_fresh_holdout.py) implements three complementary layers of similarity screening against all 300 existing scenarios in `data/dataset_v1.jsonl`:
 
 | Level | Scope | Mechanism | Rejection Threshold |
 |---|---|---|---|
@@ -38,7 +38,7 @@ The verification engine in [`scripts/prepare_fresh_holdout.py`](file:///c:/Users
 | **3. Conversational Prefix** | All turns preceding the incoming message | Dialogue stem word Jaccard similarity | $J \ge 0.70$ |
 
 ### Verification of Boundary Behavior
-The overlap detection implementation was verified with targeted unit tests in [`backend/tests/test_phase7_holdout.py`](file:///c:/Users/Admin/Documents/Hush/backend/tests/test_phase7_holdout.py):
+The overlap detection implementation was verified with targeted unit tests in [`backend/tests/test_phase7_holdout.py`](../backend/tests/test_phase7_holdout.py):
 - **Exact & Near Matches:** Identical or paraphrased messages ($J \ge 0.70$) are flagged with the exact matched master scenario ID and text preview.
 - **Prefix Leakage Detection:** Scenarios reusing existing multi-turn stems with novel endings are caught and rejected as `dialogue_prefix` leaks.
 - **Boundary Precision:** Pairs at exactly $J = 0.70$ trigger rejection; clean domain-specific dialogues ($J < 0.70$) pass cleanly.
@@ -89,15 +89,15 @@ To eliminate unverified or synthetic entries, every candidate scenario must incl
 
 The following artifacts have been created in `data/holdout/` to facilitate authoring:
 
-1. **[`data/holdout/holdout_collection_template.csv`](file:///c:/Users/Admin/Documents/Hush/data/holdout/holdout_collection_template.csv):**  
+1. **[`data/holdout/holdout_collection_template.csv`](../data/holdout/holdout_collection_template.csv):**  
    Tabular collection template designed for spreadsheets (Excel, Google Sheets) or CSV editors. Includes sample rows illustrating `SILENT`, `SPEAK`, and `ASK` without overlapping master records.
-2. **[`data/holdout/holdout_candidate_template.jsonl`](file:///c:/Users/Admin/Documents/Hush/data/holdout/holdout_candidate_template.jsonl):**  
+2. **[`data/holdout/holdout_candidate_template.jsonl`](../data/holdout/holdout_candidate_template.jsonl):**  
    JSON Lines candidate format matching Hush's internal schemas.
-3. **[`data/holdout/collection_instructions.md`](file:///c:/Users/Admin/Documents/Hush/data/holdout/collection_instructions.md):**  
+3. **[`data/holdout/collection_instructions.md`](../data/holdout/collection_instructions.md):**  
    Comprehensive authoring instructions covering addressing edge cases, metadata conflicts, and ambiguous questions.
-4. **[`data/holdout/holdout_spec.md`](file:///c:/Users/Admin/Documents/Hush/data/holdout/holdout_spec.md):**  
+4. **[`data/holdout/holdout_spec.md`](../data/holdout/holdout_spec.md):**  
    Specification covering inclusion/exclusion criteria, target counts, and quarantine rules.
-5. **[`data/holdout/holdout_manifest_template.json`](file:///c:/Users/Admin/Documents/Hush/data/holdout/holdout_manifest_template.json):**  
+5. **[`data/holdout/holdout_manifest_template.json`](../data/holdout/holdout_manifest_template.json):**  
    Manifest template initialized with status `pending_collection_and_review`.
 
 ### Target Scenario Distribution
@@ -114,7 +114,7 @@ The following artifacts have been created in `data/holdout/` to facilitate autho
 ## 5. Holdout Quarantine & Governance Protocol
 
 1. **Quarantine Directory:** All holdout assets are strictly restricted to `data/holdout/`.
-2. **Pipeline Inaccessibility:** Training pipelines ([`train_classifier.py`](file:///c:/Users/Admin/Documents/Hush/scripts/train_classifier.py)), feature extraction ([`features.py`](file:///c:/Users/Admin/Documents/Hush/backend/app/services/features.py)), calibration diagnostics ([`analyze_calibration.py`](file:///c:/Users/Admin/Documents/Hush/scripts/analyze_calibration.py)), and threshold sweeps ([`analyze_thresholds.py`](file:///c:/Users/Admin/Documents/Hush/scripts/analyze_thresholds.py)) are forbidden from importing or reading from `data/holdout/`.
+2. **Pipeline Inaccessibility:** Training pipelines ([`train_classifier.py`](../scripts/train_classifier.py)), feature extraction ([`features.py`](../backend/app/services/features.py)), calibration diagnostics ([`analyze_calibration.py`](../scripts/analyze_calibration.py)), and threshold sweeps ([`analyze_thresholds.py`](../scripts/analyze_thresholds.py)) are forbidden from importing or reading from `data/holdout/`.
 3. **Dual Human Review Gate:** Candidate scenarios must undergo the Phase 6 blinded dual-reviewer protocol. The holdout is finalized only after achieving Cohen's kappa $\ge 0.75$ and resolving all disputes.
 4. **Single-Use Final Benchmark:** Once finalized, `holdout_v1` is evaluated exactly **once** to report unbiased final performance metrics in the portfolio README.
 
@@ -155,7 +155,7 @@ All 182 tests across 15 test suites pass cleanly.
 - **Awaiting Independent Human Authoring:** The holdout cannot be completed until human authors independently write 50 multi-turn candidate scenarios.
 
 ### Action Items for Human Contributors
-1. **Scenario Authoring:** Populate 50 scenarios in [`data/holdout/holdout_collection_template.csv`](file:///c:/Users/Admin/Documents/Hush/data/holdout/holdout_collection_template.csv) or JSONL following [`data/holdout/collection_instructions.md`](file:///c:/Users/Admin/Documents/Hush/data/holdout/collection_instructions.md).
+1. **Scenario Authoring:** Populate 50 scenarios in [`data/holdout/holdout_collection_template.csv`](../data/holdout/holdout_collection_template.csv) or JSONL following [`data/holdout/collection_instructions.md`](../data/holdout/collection_instructions.md).
 2. **Execute Validation Gate:**
    ```powershell
    python scripts/prepare_fresh_holdout.py --validate data/holdout/my_candidates.csv --check-distribution

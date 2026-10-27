@@ -3,7 +3,7 @@
 > **Status:** Specification Draft  
 > **Author:** Applied ML & Software Engineering  
 > **Date:** October 2026  
-> **Governing Document:** [`docs/PLAN.md`](file:///c:/Users/Admin/Documents/Hush/docs/PLAN.md) (Sections 1, 6, 7, 8, 9, and 10)  
+> **Governing Document:** [`docs/PLAN.md`](PLAN.md) (Sections 1, 6, 7, 8, 9, and 10)  
 > **Output Dataset File (Target for Step 2):** `data/scenarios.jsonl`
 
 ---
@@ -27,7 +27,7 @@ This document establishes the official dataset specification, record schema, ann
 
 ## 2. Requirements Extracted from `docs/PLAN.md`
 
-The authoritative requirements from [`docs/PLAN.md`](file:///c:/Users/Admin/Documents/Hush/docs/PLAN.md) governing the dataset and evaluation are:
+The authoritative requirements from [`docs/PLAN.md`](PLAN.md) governing the dataset and evaluation are:
 
 | Requirement Area | Specification in `docs/PLAN.md` | Section Reference |
 |---|---|---|
@@ -47,7 +47,7 @@ The authoritative requirements from [`docs/PLAN.md`](file:///c:/Users/Admin/Docu
 
 | Item | Status in `PLAN.md` | Identified Gap / Ambiguity | Recommendation (This Specification) |
 |---|---|---|---|
-| **Gold Addressing vs. Model Input** | Ambiguous | Is `addressed_to_hush` a feature input to ML models, or a separate target? | In production, addressing runs first via [`AddressingService`](file:///c:/Users/Admin/Documents/Hush/backend/app/services/addressing.py). For the dataset, `addressed_to_hush` and `address_method` are recorded as deterministic features available to deciders. |
+| **Gold Addressing vs. Model Input** | Ambiguous | Is `addressed_to_hush` a feature input to ML models, or a separate target? | In production, addressing runs first via [`AddressingService`](../backend/app/services/addressing.py). For the dataset, `addressed_to_hush` and `address_method` are recorded as deterministic features available to deciders. |
 | **Data Provenance** | Partially specified | Recommends mix of hand-written, LLM-generated + reviewed, and dialogue corpora. | Add explicit `source` metadata field (`handwritten`, `llm_generated_reviewed`, `corpus_adapted`) to ensure provenance auditing. |
 | **Annotator Agreement** | Recommends check | Suggests Cohen's $\kappa$ on ~20% subset. | Standardize protocol: 60 scenarios (20%) dual-labeled; require Cohen's $\kappa \ge 0.75$ before releasing `data/scenarios.jsonl`. |
 
@@ -64,7 +64,7 @@ The dataset records this under the key **`expected_action`**.
 ### 3.2 Separation of Addressing and Decision Policy
 Hush explicitly separates conversational mechanics (addressing) from conversational restraint (action decision):
 1. **Addressing (`addressed_to_hush: bool`, `address_method: AddressMethod`):**
-   - Computed deterministically by the Two-Tier addressing engine ([`backend/app/services/addressing.py`](file:///c:/Users/Admin/Documents/Hush/backend/app/services/addressing.py)).
+   - Computed deterministically by the Two-Tier addressing engine ([`backend/app/services/addressing.py`](../backend/app/services/addressing.py)).
    - Represents the physical/structural routing of the message in the group chat.
 2. **Decision Action (`expected_action`):**
    - Decided by the decision engine (`RuleBasedDecider`, `ClassifierDecider`, or `LLMDecider`).
@@ -439,7 +439,7 @@ In a restraint engine, errors have asymmetric real-world consequences:
 
 Before committing or using `data/scenarios.jsonl`, a validation script (`scripts/validate_dataset.py`) must enforce:
 1. **Schema Compliance:** 100% adherence to the JSON schema in Section 4.
-2. **Addressing Consistency:** Run [`AddressingService.resolve_addressing()`](file:///c:/Users/Admin/Documents/Hush/backend/app/services/addressing.py) on every scenario; ensure `addressed_to_hush` and `address_method` match the rule engine with zero discrepancies.
+2. **Addressing Consistency:** Run [`AddressingService.resolve_addressing()`](../backend/app/services/addressing.py) on every scenario; ensure `addressed_to_hush` and `address_method` match the rule engine with zero discrepancies.
 3. **Addressing Invariant:** Confirm that no scenario with `addressed_to_hush == True` has `expected_action == "SILENT"`.
 4. **Conversation Disjointness:** Confirm $\text{Conversations}_{\text{dev}} \cap \text{Conversations}_{\text{test}} = \emptyset$.
 5. **No Null or Empty Values:** Ensure message text, speaker IDs, and rationales are non-empty strings.
