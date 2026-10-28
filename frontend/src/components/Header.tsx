@@ -1,11 +1,11 @@
 import React from 'react';
 
 interface HeaderProps {
-  isLive: boolean;
+  backendConnected: boolean;
   onReset: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ isLive, onReset }) => {
+export const Header: React.FC<HeaderProps> = ({ backendConnected, onReset }) => {
   return (
     <header className="header">
       <div className="header-inner">
@@ -18,12 +18,12 @@ export const Header: React.FC<HeaderProps> = ({ isLive, onReset }) => {
         </div>
 
         <div className="header-meta">
-          <span className="tag-badge">#strands-decider-2b</span>
-          <span className="tag-badge">#policy</span>
+          <span className="tag-badge">#hush-classifier</span>
+          <span className="tag-badge">#restraint</span>
 
-          <div className={`status-pill ${isLive ? 'live' : 'preview'}`}>
+          <div className={`status-pill ${backendConnected ? 'live' : 'unreachable'}`}>
             <span className="status-dot" />
-            <span>{isLive ? 'Live Telemetry' : 'Preview Mode'}</span>
+            <span>{backendConnected ? 'Backend connected' : 'Backend unreachable'}</span>
           </div>
 
           <button

@@ -6,7 +6,7 @@ interface RestraintMetricsProps {
 }
 
 export const RestraintMetrics: React.FC<RestraintMetricsProps> = ({ metrics }) => {
-  const { messagesEvaluated, decisions, generationCallsSaved, callReductionRate, isLive } = metrics;
+  const { messagesEvaluated, decisions, generationCallsSaved, callReductionRate } = metrics;
   const totalDecisions = decisions.SPEAK + decisions.SILENT + decisions.ASK;
 
   const speakPct = totalDecisions > 0 ? (decisions.SPEAK / totalDecisions) * 100 : 0;
@@ -21,10 +21,10 @@ export const RestraintMetrics: React.FC<RestraintMetricsProps> = ({ metrics }) =
           style={{
             fontSize: '10.5px',
             fontFamily: 'var(--font-mono)',
-            color: isLive ? 'var(--accent-speak)' : 'var(--accent-ask)',
+            color: 'var(--text-secondary)',
           }}
         >
-          {isLive ? 'Live Metrics' : 'Preview Counters'}
+          This session
         </span>
       </div>
 
@@ -74,12 +74,6 @@ export const RestraintMetrics: React.FC<RestraintMetricsProps> = ({ metrics }) =
           title={`ASK: ${decisions.ASK}`}
         />
       </div>
-
-      {!isLive && (
-        <div style={{ fontSize: '10px', color: 'var(--text-tertiary)', fontStyle: 'italic', marginTop: '6px' }}>
-          * Preview session counters. Real benchmark results are measured in evaluation suite.
-        </div>
-      )}
     </div>
   );
 };

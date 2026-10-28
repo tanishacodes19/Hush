@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Header } from './components/Header';
 import { ChatFeed } from './components/ChatFeed';
 import { MessageComposer } from './components/MessageComposer';
@@ -6,7 +6,7 @@ import { DecisionMeter } from './components/DecisionMeter';
 import { RestraintMetrics } from './components/RestraintMetrics';
 import { ComparisonView } from './components/ComparisonView';
 import { FeedMessage, RestraintMetricsData, ChatMessageResponse } from './types/api';
-import { sendMessage } from './services/api';
+import { checkHealth, sendMessage, ApiError } from './services/api';
 
 const INITIAL_MESSAGES: FeedMessage[] = [
   {
@@ -26,8 +26,25 @@ const INITIAL_MESSAGES: FeedMessage[] = [
 export const App: React.FC = () => {
   const [messages, setMessages] = useState<FeedMessage[]>(INITIAL_MESSAGES);
   const [latestDecision, setLatestDecision] = useState<ChatMessageResponse | null>(null);
-  const [isLive, setIsLive] = useState<boolean>(false);
+  const [backendConnected, setBackendConnected] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [generationMode, setGenerationMode] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    checkHealth().then((health) => {
+      if (isMounted) {
+        const connected = health !== null && health.status === 'ok';
+        setBackendConnected(connected);
+        if (health?.generation_mode) {
+          setGenerationMode(health.generation_mode.toLowerCase());
+        }
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const [metrics, setMetrics] = useState<RestraintMetricsData>({
     messagesEvaluated: 0,
@@ -55,14 +72,13 @@ export const App: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const result = await sendMessage({
+      const decision = await sendMessage({
         conversation_id: 'demo-room',
         user_id: sender.toLowerCase(),
         message: text,
       });
 
-      const { response: decision, isLive: liveStatus } = result;
-      setIsLive(liveStatus);
+      setBackendConnected(true);
       setLatestDecision(decision);
 
       // Append Hush event
@@ -94,9 +110,43 @@ export const App: React.FC = () => {
           generationCallsMade: nextCallsMade,
           generationCallsSaved: nextCallsSaved,
           callReductionRate: reductionRate,
-          isLive: liveStatus,
+          isLive: true,
         };
       });
+    } catch (err: unknown) {
+      // Re-check backend connectivity after failed send
+      checkHealth().then((health) => {
+        const connected = health !== null && health.status === 'ok';
+        setBackendConnected(connected);
+        if (health?.generation_mode) {
+          setGenerationMode(health.generation_mode.toLowerCase());
+        } else if (!connected) {
+          setGenerationMode(null);
+        }
+      });
+
+      let errorText = "Couldn't reach the Hush backend. Please try again in a moment.";
+      if (err instanceof ApiError) {
+        if (err.category === 'rate_limited') {
+          errorText = 'Too many requests. Please wait a minute.';
+        } else if (err.category === 'timeout') {
+          errorText = 'Request timed out. Please try again in a moment.';
+        } else if (err.category === 'server_error') {
+          errorText = 'A server error occurred. Please try again later.';
+        } else if (err.category === 'client_error') {
+          errorText = 'Unable to process request. Please try again.';
+        }
+      }
+
+      const errorMsg: FeedMessage = {
+        id: `err-${Date.now()}`,
+        sender: 'System',
+        text: errorText,
+        timestamp: timeStr,
+        isError: true,
+      };
+
+      setMessages((prev) => [...prev, errorMsg]);
     } finally {
       setIsLoading(false);
     }
@@ -111,7 +161,7 @@ export const App: React.FC = () => {
       generationCallsMade: 0,
       generationCallsSaved: 0,
       callReductionRate: 0,
-      isLive,
+      isLive: backendConnected,
     });
   };
 
@@ -121,7 +171,24 @@ export const App: React.FC = () => {
 
   return (
     <div className="app-container">
-      <Header isLive={isLive} onReset={handleReset} />
+      <Header backendConnected={backendConnected} onReset={handleReset} />
+
+      {generationMode === 'stub' && (
+        <div
+          role="status"
+          style={{
+            background: 'var(--bg-panel, #1e1e24)',
+            borderBottom: '1px solid var(--border-color, #2a2a32)',
+            color: 'var(--text-secondary, #cbd5e1)',
+            padding: '8px 16px',
+            textAlign: 'center',
+            fontSize: '0.85rem',
+            fontWeight: 500,
+          }}
+        >
+          Demo mode: replies are simulated; restraint decisions come from the trained classifier
+        </div>
+      )}
 
       <main className="main-content">
         {/* Left Column: Chat feed & message input */}
@@ -133,14 +200,14 @@ export const App: React.FC = () => {
             </span>
           </div>
 
-          <ChatFeed messages={messages} isLive={isLive} />
+          <ChatFeed messages={messages} />
 
           <MessageComposer onSendMessage={handleSendMessage} isLoading={isLoading} />
         </section>
 
         {/* Right Column: Prominent Confidence Meter & Restraint Metrics */}
         <aside className="sidebar">
-          <DecisionMeter latestDecision={latestDecision} isLive={isLive} />
+          <DecisionMeter latestDecision={latestDecision} />
           <RestraintMetrics metrics={metrics} />
         </aside>
 
@@ -148,7 +215,6 @@ export const App: React.FC = () => {
         <ComparisonView
           lastUserMessage={lastUserMessage}
           lastHushDecision={lastHushDecision}
-          isLive={isLive}
         />
       </main>
     </div>

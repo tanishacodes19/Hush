@@ -3,10 +3,9 @@ import { FeedMessage } from '../types/api';
 
 interface ChatFeedProps {
   messages: FeedMessage[];
-  isLive: boolean;
 }
 
-export const ChatFeed: React.FC<ChatFeedProps> = ({ messages, isLive }) => {
+export const ChatFeed: React.FC<ChatFeedProps> = ({ messages }) => {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -16,20 +15,37 @@ export const ChatFeed: React.FC<ChatFeedProps> = ({ messages, isLive }) => {
   return (
     <div className="chat-messages">
       {messages.map((msg) => {
+        // Render system error message
+        if (msg.isError) {
+          return (
+            <div key={msg.id} className="message-row system-error" role="alert" style={{ alignSelf: 'center', width: '100%', margin: '6px 0' }}>
+              <div style={{
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid rgba(239, 68, 68, 0.25)',
+                color: '#f87171',
+                borderRadius: 'var(--radius-sm, 4px)',
+                padding: '8px 12px',
+                fontSize: '12px',
+                textAlign: 'center',
+              }}>
+                {msg.text}
+              </div>
+            </div>
+          );
+        }
+
         // Render minimal inline divider for SILENT actions
         if (msg.isAgent && msg.decision?.action === 'SILENT') {
           const conf = msg.decision.confidence;
           const confStr =
-            conf !== null
-              ? isLive
-                ? `${Math.round(conf * 100)}% confidence`
-                : `${Math.round(conf * 100)}% (illustrative)`
-              : 'confidence N/A';
+            conf !== null && conf !== undefined
+              ? `${conf.toFixed(4)} score`
+              : 'score n/a';
 
           const latStr =
-            msg.decision.decision_latency_ms !== null
+            msg.decision.decision_latency_ms !== null && msg.decision.decision_latency_ms !== undefined
               ? `${Math.round(msg.decision.decision_latency_ms)}ms`
-              : 'latency not measured in preview';
+              : 'latency n/a';
 
           return (
             <div key={msg.id} className="silent-divider">
@@ -47,6 +63,7 @@ export const ChatFeed: React.FC<ChatFeedProps> = ({ messages, isLive }) => {
 
         const isHush = msg.isAgent;
         const action = msg.decision?.action;
+        const isSimulated = isHush && msg.text.startsWith('[SIMULATED DEMO]');
         const badgeClass =
           action === 'SPEAK'
             ? 'badge-speak'
@@ -66,6 +83,9 @@ export const ChatFeed: React.FC<ChatFeedProps> = ({ messages, isLive }) => {
               )}
               {isHush && action && (
                 <span className={`action-badge ${badgeClass}`}>{action}</span>
+              )}
+              {isSimulated && (
+                <span className="tag-badge" style={{ fontSize: '10px' }}>Simulated demo reply</span>
               )}
               <span className="message-time">{msg.timestamp}</span>
             </div>

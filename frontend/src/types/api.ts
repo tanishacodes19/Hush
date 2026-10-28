@@ -14,6 +14,7 @@ export interface ChatMessageResponse {
   conversation_id: string;
   action: Action;
   confidence: number | null;
+  confidence_kind?: string;
   reply: string | null;
   generation_used: boolean;
   fallback_used: boolean;
@@ -26,6 +27,7 @@ export interface FeedMessage {
   text: string;
   timestamp: string;
   isAgent?: boolean;
+  isError?: boolean;
   decision?: ChatMessageResponse;
 }
 

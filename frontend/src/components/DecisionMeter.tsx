@@ -3,16 +3,15 @@ import { ChatMessageResponse } from '../types/api';
 
 interface DecisionMeterProps {
   latestDecision: ChatMessageResponse | null;
-  isLive: boolean;
 }
 
-export const DecisionMeter: React.FC<DecisionMeterProps> = ({ latestDecision, isLive }) => {
+export const DecisionMeter: React.FC<DecisionMeterProps> = ({ latestDecision }) => {
   if (!latestDecision) {
     return (
       <div className="inspector-card">
         <div className="inspector-header">
           <span className="panel-title">Decision Gate</span>
-          <span className="tag-badge">Strands Decider 2B</span>
+          <span className="tag-badge">Hush restraint classifier</span>
         </div>
         <div style={{ padding: '16px 0', textAlign: 'center', color: 'var(--text-tertiary)', fontSize: '12px' }}>
           Awaiting incoming message to evaluate...
@@ -21,20 +20,21 @@ export const DecisionMeter: React.FC<DecisionMeterProps> = ({ latestDecision, is
     );
   }
 
-  const { action, confidence, decision_latency_ms, fallback_used, generation_used } = latestDecision;
+  const { action, confidence, decision_latency_ms, fallback_used, generation_used, reply } = latestDecision;
+  const confidenceKind = latestDecision.confidence_kind || 'classifier score (uncalibrated)';
 
   const actionColor =
     action === 'SPEAK' ? 'var(--accent-speak)' : action === 'ASK' ? 'var(--accent-ask)' : 'var(--accent-silent)';
 
-  const scorePercent = confidence !== null ? Math.round(confidence * 100) : null;
+  const scoreVal = confidence !== null && confidence !== undefined ? Number(confidence).toFixed(4) : 'n/a';
+  const barPercent = confidence !== null && confidence !== undefined ? Math.min(Math.max(confidence * 100, 0), 100) : 0;
+  const isSimulated = reply?.startsWith('[SIMULATED DEMO]') ?? false;
 
   return (
     <div className="inspector-card">
       <div className="inspector-header">
         <span className="panel-title">Latest Decision</span>
-        <span className="tag-badge">
-          {isLive ? 'Decider 2B' : 'Preview'}
-        </span>
+        <span className="tag-badge">Hush restraint classifier</span>
       </div>
 
       {/* Action & Confidence Summary */}
@@ -44,10 +44,10 @@ export const DecisionMeter: React.FC<DecisionMeterProps> = ({ latestDecision, is
         </span>
         <div className="confidence-readout">
           <span className="confidence-val" style={{ color: actionColor }}>
-            {scorePercent !== null ? `${scorePercent}%` : 'N/A'}
+            {scoreVal}
           </span>
           <span style={{ fontSize: '10px', color: 'var(--text-tertiary)' }}>
-            {confidence !== null ? (isLive ? 'calibrated' : 'preview') : ''}
+            {confidence !== null && confidence !== undefined ? confidenceKind : ''}
           </span>
         </div>
       </div>
@@ -57,7 +57,7 @@ export const DecisionMeter: React.FC<DecisionMeterProps> = ({ latestDecision, is
         <div
           className="confidence-bar-fill"
           style={{
-            width: `${scorePercent ?? 0}%`,
+            width: `${barPercent}%`,
             backgroundColor: actionColor,
           }}
         />
@@ -68,26 +68,26 @@ export const DecisionMeter: React.FC<DecisionMeterProps> = ({ latestDecision, is
         <div className="prop-row">
           <span className="prop-key">Decision Latency</span>
           <span className="prop-val">
-            {decision_latency_ms !== null
+            {decision_latency_ms !== null && decision_latency_ms !== undefined
               ? `${Math.round(decision_latency_ms)} ms`
-              : 'Not measured in preview mode'}
+              : 'n/a'}
           </span>
         </div>
 
         <div className="prop-row">
           <span className="prop-key">Fallback Policy</span>
           <span className="prop-val">
-            {fallback_used ? 'Triggered' : isLive ? 'None (Direct)' : 'Illustrative (Preview)'}
+            {fallback_used ? 'Triggered' : 'None'}
           </span>
         </div>
 
         <div className="prop-row">
-          <span className="prop-key">Bedrock Generation</span>
+          <span className="prop-key">Reply generation</span>
           <span
             className="prop-val"
             style={{ color: generation_used ? 'var(--accent-speak)' : 'var(--accent-silent)' }}
           >
-            {generation_used ? 'Invoked' : 'Strictly Bypassed'}
+            {generation_used ? (isSimulated ? 'Simulated demo reply' : 'Invoked') : 'Strictly Bypassed'}
           </span>
         </div>
       </div>

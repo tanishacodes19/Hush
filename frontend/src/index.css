@@ -175,7 +175,8 @@ body {
   color: var(--accent-speak);
 }
 
-.status-pill.preview {
+.status-pill.preview,
+.status-pill.unreachable {
   background-color: var(--accent-ask-subtle);
   border-color: var(--accent-ask-border);
   color: var(--accent-ask);

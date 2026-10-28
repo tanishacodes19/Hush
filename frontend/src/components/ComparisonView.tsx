@@ -4,26 +4,17 @@ import { FeedMessage } from '../types/api';
 interface ComparisonViewProps {
   lastUserMessage: FeedMessage | null;
   lastHushDecision: FeedMessage | null;
-  isLive: boolean;
 }
 
 export const ComparisonView: React.FC<ComparisonViewProps> = ({
   lastUserMessage,
   lastHushDecision,
-  isLive,
 }) => {
   const userText = lastUserMessage?.text ?? 'The build is broken again.';
   const userSender = lastUserMessage?.sender ?? 'Alex';
 
   const action = lastHushDecision?.decision?.action ?? 'ASK';
   const replyText = lastHushDecision?.text;
-  const confidence = lastHushDecision?.decision?.confidence;
-  const scoreText =
-    confidence !== null && confidence !== undefined
-      ? isLive
-        ? `${Math.round(confidence * 100)}%`
-        : `${Math.round(confidence * 100)}% (preview)`
-      : 'N/A';
 
   const actionClass =
     action === 'SPEAK' ? 'badge-speak' : action === 'ASK' ? 'badge-ask' : 'badge-silent';
@@ -31,10 +22,8 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
   return (
     <div className="comparison-section">
       <div className="panel-header" style={{ padding: '0 0 10px 0', borderBottom: '1px solid var(--border-base)' }}>
-        <span className="panel-title">Policy Comparison: Always-Reply Baseline vs Hush</span>
-        <span className="tag-badge">
-          {isLive ? 'Live System' : 'Illustrative Preview'}
-        </span>
+        <span className="panel-title">Illustration: how an always-reply assistant differs</span>
+        <span className="tag-badge">Illustration</span>
       </div>
 
       <div style={{ fontSize: '11px', color: 'var(--text-tertiary)', margin: '8px 0 10px' }}>
@@ -58,12 +47,12 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
           </div>
         </div>
 
-        {/* Right: Hush with Decider 2B */}
+        {/* Right: Hush Restraint Gate */}
         <div className="comparison-box" style={{ borderColor: 'var(--accent-brand-border)' }}>
           <div className="comp-header">
-            <span>Hush (Strands Decider 2B)</span>
+            <span>Hush (restraint classifier)</span>
             <span className={`action-badge ${actionClass}`}>
-              {action} ({scoreText})
+              {action}
             </span>
           </div>
 
@@ -75,12 +64,12 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
             )}
             {action === 'ASK' && (
               <span>
-                {replyText ?? 'Do you have the deployment log or error message?'}
+                {replyText && replyText.trim() ? replyText : 'Asks a clarifying question.'}
               </span>
             )}
             {action === 'SPEAK' && (
               <span>
-                {replyText ?? 'Analysis of the issue...'}
+                {replyText && replyText.trim() ? replyText : 'Generates an intervention response.'}
               </span>
             )}
           </div>
