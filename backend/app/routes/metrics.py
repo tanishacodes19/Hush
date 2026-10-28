@@ -1,6 +1,7 @@
 """Metrics telemetry endpoints for Hush."""
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, status
+from app.config import settings
 from app.schemas import MetricsResponse, ResetMetricsResponse
 from app.services.metrics import metrics_tracker
 
@@ -24,6 +25,11 @@ def get_metrics() -> MetricsResponse:
 )
 def reset_metrics() -> ResetMetricsResponse:
     """Reset all in-memory telemetry counters and latency buffers to zero."""
+    if (settings.HUSH_ENV or "").lower() != "development":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Metrics reset is only permitted in development mode (HUSH_ENV=development).",
+        )
     metrics_tracker.reset()
     return ResetMetricsResponse(
         status="ok",

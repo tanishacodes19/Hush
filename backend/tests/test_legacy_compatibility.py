@@ -369,7 +369,7 @@ def test_legacy_request_updates_conversation_history_appropriately():
     assert history_after_speak[0].speaker == "user-alex"
     assert history_after_speak[0].text == "Hush, are you listening?"
     assert history_after_speak[1].speaker == "Hush"
-    assert "[Development Stub]" in history_after_speak[1].text
+    assert "[SIMULATED DEMO]" in history_after_speak[1].text
 
     # 2. Send message resulting in SILENT
     client.post("/api/chat/message", json={

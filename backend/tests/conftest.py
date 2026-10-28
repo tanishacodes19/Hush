@@ -7,6 +7,7 @@ from pydantic_settings.sources.providers.dotenv import DotEnvSettingsSource
 
 from app.config import settings
 from app.services.decider import clear_decider_cache
+from app.services.rate_limiter import rate_limiter
 
 ALLOWED_HOSTS = {"127.0.0.1", "localhost", "::1", "testserver"}
 
@@ -50,6 +51,9 @@ def isolate_test_environment(monkeypatch):
         "AWS_SESSION_TOKEN",
     ):
         monkeypatch.delenv(key, raising=False)
+
+    rate_limiter.clear()
+    monkeypatch.setattr(settings, "HUSH_ENV", "development")
 
 
 @pytest.fixture(autouse=True)

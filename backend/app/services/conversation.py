@@ -1,16 +1,26 @@
-"""In-memory conversation state manager with bounded history."""
+"""In-memory conversation state manager with bounded history and bounded active conversations."""
 
-from collections import defaultdict
+from collections import OrderedDict
 from typing import Literal, Optional
+from app.config import settings
 from app.schemas import Message
 
 
 class ConversationManager:
-    """Manages ephemeral in-memory conversation histories per conversation ID."""
+    """Manages ephemeral in-memory conversation histories per conversation ID with bounded capacity."""
 
-    def __init__(self, max_history: int = 20) -> None:
+    def __init__(
+        self,
+        max_history: int = 20,
+        max_conversations: Optional[int] = None,
+    ) -> None:
         self.max_history = max_history
-        self._conversations: dict[str, list[Message]] = defaultdict(list)
+        self.max_conversations = (
+            max_conversations
+            if max_conversations is not None
+            else getattr(settings, "HUSH_MAX_CONVERSATIONS", 1000)
+        )
+        self._conversations: OrderedDict[str, list[Message]] = OrderedDict()
 
     def add_message(
         self,
@@ -24,7 +34,7 @@ class ConversationManager:
         reply_to: Optional[str] = None,
         ts: Optional[float] = None,
     ) -> Message:
-        """Append a message to the conversation history, pruning to max_history."""
+        """Append a message to the conversation history, pruning to max_history and evicting oldest rooms if capped."""
         msg = Message(
             speaker=speaker,
             text=text,
@@ -35,6 +45,15 @@ class ConversationManager:
             reply_to=reply_to,
             ts=ts,
         )
+
+        if conversation_id not in self._conversations:
+            while len(self._conversations) >= self.max_conversations:
+                # Evict oldest conversation first (deterministic FIFO order of creation/access)
+                self._conversations.popitem(last=False)
+            self._conversations[conversation_id] = []
+        else:
+            self._conversations.move_to_end(conversation_id)
+
         history = self._conversations[conversation_id]
         history.append(msg)
         if len(history) > self.max_history:

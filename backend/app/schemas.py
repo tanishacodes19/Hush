@@ -6,6 +6,7 @@ All fields and structures are derived strictly from PLAN.md (Sections 1, 5, and 
 from enum import Enum
 from typing import Any, Literal, Optional, Union
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from app.config import settings
 
 
 class Action(str, Enum):
@@ -42,6 +43,15 @@ class Message(BaseModel):
     reply_to: Optional[str] = Field(default=None, description="Target message ID being replied to")
     ts: Optional[float] = Field(default=None, description="Message timestamp")
 
+    @field_validator("text", mode="after")
+    @classmethod
+    def validate_message_length(cls, v: str) -> str:
+        if len(v) > settings.HUSH_MAX_MESSAGE_LENGTH:
+            raise ValueError(
+                f"Message length ({len(v)}) exceeds limit of {settings.HUSH_MAX_MESSAGE_LENGTH} characters."
+            )
+        return v
+
 
 class ChatMessageRequest(BaseModel):
     """Incoming chat message request (PLAN.md Section 7)."""
@@ -50,6 +60,15 @@ class ChatMessageRequest(BaseModel):
     conversation_id: str = Field(..., min_length=1, description="Identifier for the conversation room")
     user_id: str = Field(..., min_length=1, description="Identifier for the sending user")
     message: str = Field(..., min_length=1, description="New message text to evaluate")
+
+    @field_validator("message", mode="after")
+    @classmethod
+    def validate_message_length(cls, v: str) -> str:
+        if len(v) > settings.HUSH_MAX_MESSAGE_LENGTH:
+            raise ValueError(
+                f"Message length ({len(v)}) exceeds limit of {settings.HUSH_MAX_MESSAGE_LENGTH} characters."
+            )
+        return v
 
 
 class ConversationMessagePayload(BaseModel):
@@ -81,6 +100,10 @@ class ConversationMessagePayload(BaseModel):
     def validate_non_whitespace(cls, v: str) -> str:
         if not v.strip():
             raise ValueError("Field must not be empty or whitespace-only")
+        if len(v) > settings.HUSH_MAX_MESSAGE_LENGTH:
+            raise ValueError(
+                f"Field length ({len(v)}) exceeds limit of {settings.HUSH_MAX_MESSAGE_LENGTH} characters."
+            )
         return v
 
     @field_validator("display_name", "reply_to", mode="after")

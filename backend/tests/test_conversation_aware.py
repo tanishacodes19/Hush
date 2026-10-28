@@ -80,7 +80,7 @@ def test_conversation_aware_nested_payload_accepted():
     assert data["action"] == "SPEAK"
     assert data["generation_used"] is True
     assert data["reply"] is not None
-    assert "[Development Stub]" in data["reply"]
+    assert "[SIMULATED DEMO]" in data["reply"]
 
 
 def test_conversation_aware_flat_payload_accepted():
@@ -501,4 +501,4 @@ def test_conversation_aware_updates_history_compatibly():
     assert history[0].speaker == "user-jordan"
     assert history[0].text == "Hush, check this out."
     assert history[1].speaker == "Hush"
-    assert "[Development Stub]" in history[1].text
+    assert "[SIMULATED DEMO]" in history[1].text

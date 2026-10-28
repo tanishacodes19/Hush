@@ -3,7 +3,7 @@
 import inspect
 import time
 from typing import Union
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Request, status
 from app.config import settings
 from app.schemas import (
     Action,
@@ -18,6 +18,7 @@ from app.services.conversation import conversation_manager
 from app.services.decider import get_decider
 from app.services.generation import GenerationConfigError, GenerationServiceError, get_generator
 from app.services.metrics import metrics_tracker
+from app.services.rate_limiter import get_client_ip, rate_limiter
 from app.services.request_adapter import normalize_request
 
 router = APIRouter(prefix="/api/chat", tags=["chat"])
@@ -30,7 +31,21 @@ router = APIRouter(prefix="/api/chat", tags=["chat"])
 )
 def handle_chat_message(
     request: ChatRequestUnion,
+    raw_request: Request,
 ) -> Union[ConversationAwareChatMessageResponse, ChatMessageResponse]:
+    # Check rate limit
+    if settings.HUSH_RATE_LIMIT_ENABLED:
+        client_ip = get_client_ip(
+            raw_request,
+            trust_proxy_headers=settings.HUSH_TRUST_PROXY_HEADERS,
+            trusted_proxy_hops=settings.HUSH_TRUSTED_PROXY_HOPS,
+        )
+        if not rate_limiter.is_allowed(client_ip):
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Too many requests. Please try again later.",
+            )
+
     # 0. Normalize incoming request (supports legacy and conversation-aware schemas)
     normalized = normalize_request(request)
 

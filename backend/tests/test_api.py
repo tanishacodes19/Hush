@@ -40,8 +40,8 @@ def test_health_check_endpoint():
     response = client.get("/health")
     assert response.status_code == 200
     data = response.json()
+    assert set(data.keys()) == {"status", "generation_mode", "decider_mode"}
     assert data["status"] == "ok"
-    assert data["mode"] == settings.HUSH_DECIDER_MODE
     assert data["decider_mode"] == settings.HUSH_DECIDER_MODE
     assert data["generation_mode"] == settings.HUSH_GENERATION_MODE
     assert response.headers.get("x-hush-decider-mode") == settings.HUSH_DECIDER_MODE
@@ -63,7 +63,7 @@ def test_chat_message_speak_action_stub_mode():
     assert data["action"] == "SPEAK"
     assert data["generation_used"] is True
     assert data["reply"] is not None
-    assert "[Development Stub]" in data["reply"]
+    assert "[SIMULATED DEMO]" in data["reply"]
     # Stub mode avoids fabricating confidence or latency
     assert data["confidence"] is None
     assert data["decision_latency_ms"] is None
@@ -84,7 +84,7 @@ def test_chat_message_ask_action_stub_mode():
     assert data["action"] == "ASK"
     assert data["generation_used"] is True
     assert data["reply"] is not None
-    assert "[Development Stub]" in data["reply"]
+    assert "[SIMULATED DEMO]" in data["reply"]
     assert data["confidence"] is None
     assert data["decision_latency_ms"] is None
 

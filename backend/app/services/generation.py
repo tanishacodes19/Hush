@@ -35,17 +35,17 @@ class GenerationService(Protocol):
 class DevelopmentStubGenerator:
     """Explicit development stub generator for testing without AWS Bedrock or OpenAI.
 
-    All generated text is explicitly prefixed with '[Development Stub]'
+    All generated text is explicitly prefixed with '[SIMULATED DEMO]'
     so it cannot be mistaken for real LLM output.
     """
 
     def generate_reply(self, context: list[Message]) -> str:
         last_msg = context[-1].text if context else "conversation"
-        return f"[Development Stub] Generated reply addressing: '{last_msg}'"
+        return f"[SIMULATED DEMO] Generated reply addressing: '{last_msg}'"
 
     def generate_clarification(self, context: list[Message]) -> str:
         last_msg = context[-1].text if context else "conversation"
-        return f"[Development Stub] Clarifying question: What specific details can you share about '{last_msg}'?"
+        return f"[SIMULATED DEMO] Clarifying question: What specific details can you share about '{last_msg}'?"
 
 
 def get_generator(mode: str | None = None) -> GenerationService:
