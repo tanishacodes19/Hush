@@ -3,11 +3,13 @@
  */
 
 export type Action = 'SPEAK' | 'SILENT' | 'ASK';
+export type ChatContext = 'direct' | 'group';
 
 export interface ChatMessageRequest {
   conversation_id: string;
   user_id: string;
   message: string;
+  chat_context?: ChatContext;
 }
 
 export interface ChatMessageResponse {
@@ -40,6 +42,5 @@ export interface RestraintMetricsData {
   };
   generationCallsMade: number;
   generationCallsSaved: number;
-  callReductionRate: number; // percentage (0 - 100)
   isLive: boolean;
 }
