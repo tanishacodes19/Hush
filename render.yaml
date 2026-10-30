@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: hush-backend
+    runtime: python
+    region: oregon
+    plan: free
+    rootDir: .
+    buildCommand: pip install --upgrade pip && pip install -r backend/requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT --app-dir backend
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: HUSH_ENV
+        value: production
+      - key: HUSH_DECIDER_MODE
+        value: classifier
+      - key: HUSH_GENERATION_MODE
+        value: openai
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_BASE_URL
+        value: https://api.groq.com/openai/v1
+      - key: OPENAI_MODEL_ID
+        value: llama-3.3-70b-versatile
+      - key: OPENAI_TIMEOUT_SECONDS
+        value: "15.0"
+      - key: CORS_ORIGINS
+        sync: false
+      - key: LOG_LEVEL
+        value: INFO

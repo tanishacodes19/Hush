@@ -1,0 +1,79 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Environment Variables & Secrets (Keep .env.example tracked)
+.env
+.env*.local
+!.env.example
+
+# Node / Frontend
+node_modules/
+dist/
+dist-ssr/
+*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.vite/
+
+# IDE & OS Artifacts
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Human Review Submissions & Private Records (Local only; excluded from public portfolio release)
+data/review/*completed*.csv
+data/review/*form*.csv
+data/review/*packet*.jsonl
+data/review/disputes*.json
+data/review/review_manifest_v1.json
+
+# Holdout Dataset, Candidate Drafts & Review Submissions (Deny-by-default quarantine boundary)
+data/holdout/*
+!data/holdout/collection_instructions.md
+!data/holdout/holdout_spec.md
+!data/holdout/holdout_manifest_template.json
+!data/holdout/holdout_candidate_template.jsonl
+!data/holdout/holdout_collection_template.csv
+data/holdout/review/
+
+# Internal Adjudication Records (Local only; public summary in data/review/review_status_summary.md)
+docs/adjudication_*.md
+
+

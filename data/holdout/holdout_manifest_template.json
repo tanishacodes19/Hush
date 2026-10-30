@@ -1,0 +1,12 @@
+{
+  "manifest_version": "1.0.0",
+  "dataset_name": "holdout_v1",
+  "target_size": 50,
+  "collection_status": "pending_collection_and_review",
+  "independent_review_completed": false,
+  "cohens_kappa": null,
+  "sha256_checksum": null,
+  "inclusion_rules_verified": false,
+  "zero_overlap_verified": false,
+  "records": []
+}

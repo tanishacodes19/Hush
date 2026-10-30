@@ -1,0 +1,320 @@
+{
+  "split": "test",
+  "n_samples": 120,
+  "seed": 42,
+  "n_resamples": 1000,
+  "reports": {
+    "Majority Class (SILENT)": {
+      "model_name": "Majority Class (SILENT)",
+      "split": "test",
+      "total_samples": 120,
+      "accuracy": {
+        "value": 0.45,
+        "ci_lower": 0.3583,
+        "ci_upper": 0.5417
+      },
+      "macro_f1": {
+        "value": 0.2069,
+        "ci_lower": 0.1759,
+        "ci_upper": 0.2342
+      },
+      "unnecessary_response_rate": {
+        "value": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0
+      },
+      "missed_contribution_rate": {
+        "value": 1.0,
+        "ci_lower": 1.0,
+        "ci_upper": 1.0
+      },
+      "calls_avoided_rate": {
+        "value": 1.0,
+        "ci_lower": 1.0,
+        "ci_upper": 1.0
+      },
+      "per_class": {
+        "SILENT": {
+          "precision": 0.45,
+          "recall": 1.0,
+          "f1": 0.6207,
+          "support": 54.0
+        },
+        "SPEAK": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 42.0
+        },
+        "ASK": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 24.0
+        }
+      },
+      "confusion_matrix": {
+        "SILENT": {
+          "SILENT": 54,
+          "SPEAK": 0,
+          "ASK": 0
+        },
+        "SPEAK": {
+          "SILENT": 42,
+          "SPEAK": 0,
+          "ASK": 0
+        },
+        "ASK": {
+          "SILENT": 24,
+          "SPEAK": 0,
+          "ASK": 0
+        }
+      }
+    },
+    "Always-Reply (SPEAK)": {
+      "model_name": "Always-Reply (SPEAK)",
+      "split": "test",
+      "total_samples": 120,
+      "accuracy": {
+        "value": 0.35,
+        "ci_lower": 0.2667,
+        "ci_upper": 0.4417
+      },
+      "macro_f1": {
+        "value": 0.1728,
+        "ci_lower": 0.1404,
+        "ci_upper": 0.2042
+      },
+      "unnecessary_response_rate": {
+        "value": 1.0,
+        "ci_lower": 1.0,
+        "ci_upper": 1.0
+      },
+      "missed_contribution_rate": {
+        "value": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0
+      },
+      "calls_avoided_rate": {
+        "value": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0
+      },
+      "per_class": {
+        "SILENT": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 54.0
+        },
+        "SPEAK": {
+          "precision": 0.35,
+          "recall": 1.0,
+          "f1": 0.5185,
+          "support": 42.0
+        },
+        "ASK": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 24.0
+        }
+      },
+      "confusion_matrix": {
+        "SILENT": {
+          "SILENT": 0,
+          "SPEAK": 54,
+          "ASK": 0
+        },
+        "SPEAK": {
+          "SILENT": 0,
+          "SPEAK": 42,
+          "ASK": 0
+        },
+        "ASK": {
+          "SILENT": 0,
+          "SPEAK": 24,
+          "ASK": 0
+        }
+      }
+    },
+    "Rule-Based Heuristic": {
+      "model_name": "Rule-Based Heuristic",
+      "split": "test",
+      "total_samples": 120,
+      "accuracy": {
+        "value": 0.725,
+        "ci_lower": 0.65,
+        "ci_upper": 0.8083
+      },
+      "macro_f1": {
+        "value": 0.5653,
+        "ci_lower": 0.5021,
+        "ci_upper": 0.6373
+      },
+      "unnecessary_response_rate": {
+        "value": 0.1852,
+        "ci_lower": 0.082,
+        "ci_upper": 0.2857
+      },
+      "missed_contribution_rate": {
+        "value": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0
+      },
+      "calls_avoided_rate": {
+        "value": 0.3667,
+        "ci_lower": 0.2833,
+        "ci_upper": 0.45
+      },
+      "per_class": {
+        "SILENT": {
+          "precision": 1.0,
+          "recall": 0.8148,
+          "f1": 0.898,
+          "support": 54.0
+        },
+        "SPEAK": {
+          "precision": 0.56,
+          "recall": 1.0,
+          "f1": 0.7179,
+          "support": 42.0
+        },
+        "ASK": {
+          "precision": 1.0,
+          "recall": 0.0417,
+          "f1": 0.08,
+          "support": 24.0
+        }
+      },
+      "confusion_matrix": {
+        "SILENT": {
+          "SILENT": 44,
+          "SPEAK": 10,
+          "ASK": 0
+        },
+        "SPEAK": {
+          "SILENT": 0,
+          "SPEAK": 42,
+          "ASK": 0
+        },
+        "ASK": {
+          "SILENT": 0,
+          "SPEAK": 23,
+          "ASK": 1
+        }
+      }
+    },
+    "Mock LLM Decider": {
+      "model_name": "Mock LLM Decider",
+      "split": "test",
+      "total_samples": 120,
+      "accuracy": {
+        "value": 0.45,
+        "ci_lower": 0.3583,
+        "ci_upper": 0.5417
+      },
+      "macro_f1": {
+        "value": 0.2069,
+        "ci_lower": 0.1759,
+        "ci_upper": 0.2342
+      },
+      "unnecessary_response_rate": {
+        "value": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0
+      },
+      "missed_contribution_rate": {
+        "value": 1.0,
+        "ci_lower": 1.0,
+        "ci_upper": 1.0
+      },
+      "calls_avoided_rate": {
+        "value": 1.0,
+        "ci_lower": 1.0,
+        "ci_upper": 1.0
+      },
+      "per_class": {
+        "SILENT": {
+          "precision": 0.45,
+          "recall": 1.0,
+          "f1": 0.6207,
+          "support": 54.0
+        },
+        "SPEAK": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 42.0
+        },
+        "ASK": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 24.0
+        }
+      },
+      "confusion_matrix": {
+        "SILENT": {
+          "SILENT": 54,
+          "SPEAK": 0,
+          "ASK": 0
+        },
+        "SPEAK": {
+          "SILENT": 42,
+          "SPEAK": 0,
+          "ASK": 0
+        },
+        "ASK": {
+          "SILENT": 24,
+          "SPEAK": 0,
+          "ASK": 0
+        }
+      }
+    }
+  },
+  "paired_comparisons": {
+    "rule_vs_majority": {
+      "mcnemar": {
+        "statistic": 19.3208,
+        "p_value": 1.1e-05,
+        "b": 43,
+        "c": 10,
+        "both_correct": 44,
+        "both_incorrect": 23,
+        "method": "mcnemar_chi2",
+        "significant_at_05": true
+      },
+      "delta_macro_f1": {
+        "f1_model_a": 0.5653,
+        "f1_model_b": 0.2069,
+        "delta": 0.3584,
+        "ci_lower": 0.2847,
+        "ci_upper": 0.4345,
+        "p_value": 0.0,
+        "significant_at_05": true
+      }
+    },
+    "rule_vs_always_reply": {
+      "mcnemar": {
+        "statistic": 43.0222,
+        "p_value": 0.0,
+        "b": 45,
+        "c": 0,
+        "both_correct": 42,
+        "both_incorrect": 33,
+        "method": "mcnemar_chi2",
+        "significant_at_05": true
+      },
+      "delta_macro_f1": {
+        "f1_model_a": 0.5653,
+        "f1_model_b": 0.1728,
+        "delta": 0.3925,
+        "ci_lower": 0.3366,
+        "ci_upper": 0.4653,
+        "p_value": 0.0,
+        "significant_at_05": true
+      }
+    }
+  }
+}
