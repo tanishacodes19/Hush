@@ -34,4 +34,9 @@ export const SAMPLE_SCENARIOS: SampleScenario[] = [
     sender: 'Jordan',
     text: 'The tests failed in the auth module, status 401 on refresh token.',
   },
+  {
+    id: 's-06',
+    sender: 'You',
+    text: 'Can you explain what machine learning is in simple terms?',
+  },
 ];
