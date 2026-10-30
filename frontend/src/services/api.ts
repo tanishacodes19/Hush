@@ -103,10 +103,12 @@ export async function sendMessage(request: ChatMessageRequest): Promise<ChatMess
       headers['X-Hush-Chat-Context'] = request.chat_context;
     }
 
+    const { chat_context, ...bodyPayload } = request;
+
     res = await fetch(`${API_BASE_URL}/api/chat/message`, {
       method: 'POST',
       headers,
-      body: JSON.stringify(request),
+      body: JSON.stringify(bodyPayload),
       signal: controller.signal,
     });
   } catch (err: unknown) {
