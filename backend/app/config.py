@@ -54,7 +54,7 @@ class Settings(BaseSettings):
     HUSH_TRUSTED_PROXY_HOPS: int = 1
 
     # CORS origins
-    CORS_ORIGINS: list[str] = Field(default_factory=list)
+    CORS_ORIGINS: list[str] | str = Field(default_factory=list)
 
     @field_validator("HUSH_TRUSTED_PROXY_HOPS", mode="before")
     @classmethod
